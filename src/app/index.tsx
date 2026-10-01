@@ -40,7 +40,6 @@ export default function App() {
               </Link>
             </View>
           </View>
-
           <Text className="text-sm font-semibold mb-1 text-gray-400">
             Email
           </Text>
@@ -50,7 +49,6 @@ export default function App() {
             keyboardType="email-address"
             className="border border-gray-500 rounded-lg px-4 py-3 mb-4 text-white"
           />
-
           <Text className="text-sm font-semibold mb-1 text-gray-400">
             Password
           </Text>
@@ -80,20 +78,17 @@ export default function App() {
               </Pressable>
             </Link>
           </View>
-
           <Pressable
             onPress={handleLogin}
             className="bg-blue-600 py-3 rounded-lg items-center mb-6"
           >
             <Text className="text-white font-semibold">Log In</Text>
           </Pressable>
-
           <View className="flex-row items-center mb-6">
             <View className="flex-1 h-px bg-gray-600" />
             <Text className="mx-3 text-gray-400 text-sm">Or</Text>
             <View className="flex-1 h-px bg-gray-600" />
           </View>
-
           <Pressable className="border border-gray-500 rounded-lg py-3 items-center mb-3 flex-row justify-center">
             <FontAwesome name="google" size={20} color="#4B4B4B" />
             <Text className="font-bold ml-4 text-black">
@@ -106,6 +101,9 @@ export default function App() {
               Continue with Facebook
             </Text>
           </Pressable>
+          <Link href={"/../screens/admin/DashboardScreen"}>
+            <Text>Admin</Text>
+          </Link>
         </View>
       </View>
     </LinearGradient>
