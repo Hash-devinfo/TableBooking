@@ -1,6 +1,6 @@
 import { FontAwesome, Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
-import { Link, router } from "expo-router";
+import { Link, router,useLocalSearchParams } from "expo-router";
 import { useState } from "react";
 import { Image, Pressable, Text, TextInput, View } from "react-native";
 
@@ -10,6 +10,16 @@ export default function App() {
   };
 
   const [rememberMe, setRememberMe] = useState(false);
+  const { email: signupEmail, password: signupPassword } =
+  useLocalSearchParams();
+
+const [email, setEmail] = useState(
+  typeof signupEmail === "string" ? signupEmail : ""
+);
+
+const [password, setPassword] = useState(
+  typeof signupPassword === "string" ? signupPassword : ""
+);
   return (
     <LinearGradient
       colors={["#2F6FED", "#1FD1D1"]}
@@ -44,19 +54,23 @@ export default function App() {
             Email
           </Text>
           <TextInput
+           value={email}
+  onChangeText={setEmail}
             placeholder="you@example.com"
             placeholderTextColor="#9ca3af"
             keyboardType="email-address"
-            className="border border-gray-500 rounded-lg px-4 py-3 mb-4 text-white"
+            className="border border-gray-500 rounded-lg px-4 py-3 mb-4 text-black"
           />
           <Text className="text-sm font-semibold mb-1 text-gray-400">
             Password
           </Text>
           <TextInput
+          value={password}
+  onChangeText={setPassword}
             placeholder="********"
             placeholderTextColor="#9ca3af"
             secureTextEntry
-            className="border border-gray-500 rounded-lg px-4 py-3 text-white"
+            className="border border-gray-500 rounded-lg px-4 py-3 text-black"
           />
           <View className="flex-row justify-between ">
             <Pressable
@@ -101,9 +115,7 @@ export default function App() {
               Continue with Facebook
             </Text>
           </Pressable>
-          <Link href={"/../screens/admin/DashboardScreen"}>
-            <Text>Admin</Text>
-          </Link>
+         
         </View>
       </View>
     </LinearGradient>

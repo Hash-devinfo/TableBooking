@@ -1,7 +1,8 @@
 const API_URL = "http://10.0.2.2:3000/api";
 
 export const signupUser = async (userData: {
-  name: string;
+  firstName: string;
+  lastName:string;
   email: string;
   dob: string;
   phone: string;
