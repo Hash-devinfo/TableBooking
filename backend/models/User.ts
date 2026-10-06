@@ -1,6 +1,6 @@
 // models/User.ts
 import mongoose, { Schema, Document, Model } from "mongoose";
-
+import bcrypt from "bcrypt";
 
 export type UserRole = "customer" | "restaurant" | "admin";
 
@@ -57,6 +57,11 @@ const userSchema = new Schema<IUser>(
   },
   { timestamps: true }
 );
+userSchema.methods.comparePassword = function (
+  candidatePassword: string
+): Promise<boolean> {
+  return bcrypt.compare(candidatePassword, this.password);
+};
 
 const User: Model<IUser> = mongoose.model<IUser>("User", userSchema);
 

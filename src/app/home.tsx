@@ -2,6 +2,7 @@ import { Ionicons,MaterialCommunityIcons  } from "@expo/vector-icons";
 import { router, Link } from "expo-router";
 import { Image, Pressable, Text, TextInput, View } from "react-native";
 import { Searchbar, Button } from 'react-native-paper';
+import * as SecureStore from "expo-secure-store";
 import { useState } from "react";
 export default function Home() {
   const [search, setSearch]=useState("")
@@ -9,6 +10,13 @@ export default function Home() {
   const handletablebookingpage = () => {
     router.replace("/bookAtable");
   };
+  const handleLogout = async () => {
+  try {
+    await SecureStore.deleteItemAsync("authToken");
+  } finally {
+    router.replace("/"); // Use your login screen's actual route.
+  }
+};
   return (
     <View className="flex-1 bg-white px-2 pt-2">
       <View className="flex-row items-start">
@@ -64,6 +72,10 @@ export default function Home() {
         <Button icon="" mode="contained" onPress={handletablebookingpage}>
     Book a table
   </Button>
+ <Button icon="" mode="contained" onPress={handleLogout}>
+    LogOut
+  </Button>
+  
       </View>
     </View>
   );

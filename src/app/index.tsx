@@ -1,18 +1,18 @@
+import { loginUser } from "@/api/authApi";
 import { FontAwesome, Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { Link, router,useLocalSearchParams } from "expo-router";
-import { useState } from "react";
+import { useState, useEffect} from "react";
 import { Image, Pressable, Text, TextInput, View } from "react-native";
+import * as SecureStore from "expo-secure-store";
 
 export default function App() {
-  const handleLogin = () => {
-    router.replace("/home");
-  };
 
   const [rememberMe, setRememberMe] = useState(false);
   const { email: signupEmail, password: signupPassword } =
   useLocalSearchParams();
-
+const [loading, setLoading] = useState(false);
+const [error, setError] = useState("");
 const [email, setEmail] = useState(
   typeof signupEmail === "string" ? signupEmail : ""
 );
@@ -20,6 +20,50 @@ const [email, setEmail] = useState(
 const [password, setPassword] = useState(
   typeof signupPassword === "string" ? signupPassword : ""
 );
+useEffect(() => {
+  const checkRememberedLogin = async () => {
+    try {
+      const token = await SecureStore.getItemAsync("authToken");
+
+      if (token) {
+        router.replace("/home");
+      }
+    } catch {
+      
+    }
+  };
+
+  checkRememberedLogin();
+}, []);
+const handleLogin = async () => {
+  setError("");
+
+  try {
+    setLoading(true);
+
+    const data = (await loginUser({
+      email: email.trim(),
+      password,
+    })) as { token: string };
+
+    if (!data?.token) {
+      throw new Error("Login response was invalid");
+    }
+
+    if (rememberMe) {
+      await SecureStore.setItemAsync("authToken", data.token);
+    } else {
+      await SecureStore.deleteItemAsync("authToken");
+    }
+
+router.replace("/home");
+  } catch (err) {
+    setError(err instanceof Error ? err.message : "Login failed");
+  } finally {
+    setLoading(false);
+  }
+}
+
   return (
     <LinearGradient
       colors={["#2F6FED", "#1FD1D1"]}
@@ -59,6 +103,7 @@ const [password, setPassword] = useState(
             placeholder="you@example.com"
             placeholderTextColor="#9ca3af"
             keyboardType="email-address"
+            autoCapitalize="none"
             className="border border-gray-500 rounded-lg px-4 py-3 mb-4 text-black"
           />
           <Text className="text-sm font-semibold mb-1 text-gray-400">
@@ -72,6 +117,7 @@ const [password, setPassword] = useState(
             secureTextEntry
             className="border border-gray-500 rounded-lg px-4 py-3 text-black"
           />
+          {error ? <Text className=" text-red-600">{error}</Text> : null}
           <View className="flex-row justify-between ">
             <Pressable
               onPress={() => setRememberMe(!rememberMe)}
@@ -92,12 +138,16 @@ const [password, setPassword] = useState(
               </Pressable>
             </Link>
           </View>
+          
           <Pressable
-            onPress={handleLogin}
-            className="bg-blue-600 py-3 rounded-lg items-center mb-6"
-          >
-            <Text className="text-white font-semibold">Log In</Text>
-          </Pressable>
+  onPress={handleLogin}
+  disabled={loading}
+  className="bg-blue-600 py-3 rounded-lg items-center mb-6"
+>
+  <Text className="text-white font-semibold">
+    {loading ? "Logging in..." : "Log In"}
+  </Text>
+</Pressable>
           <View className="flex-row items-center mb-6">
             <View className="flex-1 h-px bg-gray-600" />
             <Text className="mx-3 text-gray-400 text-sm">Or</Text>
