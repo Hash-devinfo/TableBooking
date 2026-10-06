@@ -156,12 +156,12 @@ useEffect(() => {
               className="text-gray-600 mt-2 leading-5"
               numberOfLines={isAboutExpanded ? undefined : 3}
             >
-              Born from a culinary journey through Italy. Made with love. Basilico is chef-owner Sara's love letter to Italian and Mediterranean cooking — cozy, warm, and deeply personal.
+              Born from a culinary journey through Italy. Made with love.
+               Basilico is chef-owner Sara's love letter to Italian and 
+               Mediterranean cooking — cozy, warm, and deeply personal.
             </Text>
             <Pressable
               onPress={() => setIsAboutExpanded((expanded) => !expanded)}
-              accessibilityRole="button"
-              accessibilityLabel={isAboutExpanded ? "Read less about us" : "Read more about us"}
               className="self-start mt-1"
             >
               <Text className="text-blue-700 font-medium">

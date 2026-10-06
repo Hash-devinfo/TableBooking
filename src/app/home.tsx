@@ -7,14 +7,13 @@ import { useState } from "react";
 export default function Home() {
   const [search, setSearch]=useState("")
 
-  const handletablebookingpage = () => {
-    router.replace("/bookAtable");
-  };
+ 
+
   const handleLogout = async () => {
   try {
     await SecureStore.deleteItemAsync("authToken");
   } finally {
-    router.replace("/"); // Use your login screen's actual route.
+    router.replace("/");
   }
 };
   return (
@@ -69,9 +68,11 @@ export default function Home() {
     />
       </View>
       <View className="flex-row items-center rounded-full mt-4 justify-center">
-        <Button icon="" mode="contained" onPress={handletablebookingpage}>
+        <Link href={"/bookAtable"}>
+        <Button icon="" mode="contained">
     Book a table
   </Button>
+        </Link>
  <Button icon="" mode="contained" onPress={handleLogout}>
     LogOut
   </Button>
