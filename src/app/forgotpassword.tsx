@@ -10,8 +10,7 @@ export default function ForgotPassword() {
       colors={["#2F6FED", "#1FD1D1"]}
       start={{ x: 0, y: 0 }}
       end={{ x: 0, y: 1 }}
-      style={{ flex: 1 }}
-    >
+      style={{ flex: 1 }}>
       <View className="flex px-8 pt-12">
         <View className="flex-row justify-center items-center mb-10">
           <Image

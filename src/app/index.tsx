@@ -1,76 +1,72 @@
 import { loginUser } from "@/api/authApi";
 import { FontAwesome, Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
-import { Link, router,useLocalSearchParams } from "expo-router";
-import { useState, useEffect} from "react";
+import { Link, router, useLocalSearchParams } from "expo-router";
+import { useState, useEffect } from "react";
 import { Image, Pressable, Text, TextInput, View } from "react-native";
 import * as SecureStore from "expo-secure-store";
 
 export default function App() {
-
   const [rememberMe, setRememberMe] = useState(false);
   const { email: signupEmail, password: signupPassword } =
-  useLocalSearchParams();
-const [loading, setLoading] = useState(false);
-const [error, setError] = useState("");
-const [email, setEmail] = useState(
-  typeof signupEmail === "string" ? signupEmail : ""
-);
+    useLocalSearchParams();
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [email, setEmail] = useState(
+    typeof signupEmail === "string" ? signupEmail : "",
+  );
 
-const [password, setPassword] = useState(
-  typeof signupPassword === "string" ? signupPassword : ""
-);
-useEffect(() => {
-  const checkRememberedLogin = async () => {
+  const [password, setPassword] = useState(
+    typeof signupPassword === "string" ? signupPassword : "",
+  );
+  useEffect(() => {
+    const checkRememberedLogin = async () => {
+      try {
+        const token = await SecureStore.getItemAsync("authToken");
+
+        if (token) {
+          router.replace("/home");
+        }
+      } catch {}
+    };
+
+    checkRememberedLogin();
+  }, []);
+  const handleLogin = async () => {
+    setError("");
+
     try {
-      const token = await SecureStore.getItemAsync("authToken");
+      setLoading(true);
 
-      if (token) {
-        router.replace("/home");
+      const data = (await loginUser({
+        email: email.trim(),
+        password,
+      })) as { token: string };
+
+      if (!data?.token) {
+        throw new Error("Login response was invalid");
       }
-    } catch {
-      
+
+      if (rememberMe) {
+        await SecureStore.setItemAsync("authToken", data.token);
+      } else {
+        await SecureStore.deleteItemAsync("authToken");
+      }
+
+      router.replace("/home");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Login failed");
+    } finally {
+      setLoading(false);
     }
   };
-
-  checkRememberedLogin();
-}, []);
-const handleLogin = async () => {
-  setError("");
-
-  try {
-    setLoading(true);
-
-    const data = (await loginUser({
-      email: email.trim(),
-      password,
-    })) as { token: string };
-
-    if (!data?.token) {
-      throw new Error("Login response was invalid");
-    }
-
-    if (rememberMe) {
-      await SecureStore.setItemAsync("authToken", data.token);
-    } else {
-      await SecureStore.deleteItemAsync("authToken");
-    }
-
-router.replace("/home");
-  } catch (err) {
-    setError(err instanceof Error ? err.message : "Login failed");
-  } finally {
-    setLoading(false);
-  }
-}
 
   return (
     <LinearGradient
       colors={["#2F6FED", "#1FD1D1"]}
       start={{ x: 0, y: 0 }}
       end={{ x: 0, y: 1 }}
-      style={{ flex: 1 }}
-    >
+      style={{ flex: 1 }}>
       <View className="flex px-8 pt-12">
         <View className="flex-row justify-center items-center mb-10">
           <Image
@@ -98,8 +94,8 @@ router.replace("/home");
             Email
           </Text>
           <TextInput
-           value={email}
-  onChangeText={setEmail}
+            value={email}
+            onChangeText={setEmail}
             placeholder="you@example.com"
             placeholderTextColor="#9ca3af"
             keyboardType="email-address"
@@ -110,8 +106,8 @@ router.replace("/home");
             Password
           </Text>
           <TextInput
-          value={password}
-  onChangeText={setPassword}
+            value={password}
+            onChangeText={setPassword}
             placeholder="********"
             placeholderTextColor="#9ca3af"
             secureTextEntry
@@ -121,8 +117,7 @@ router.replace("/home");
           <View className="flex-row justify-between ">
             <Pressable
               onPress={() => setRememberMe(!rememberMe)}
-              className="flex-row mt-2"
-            >
+              className="flex-row mt-2">
               <Ionicons
                 name={rememberMe ? "checkbox" : "square-outline"}
                 size={20}
@@ -138,16 +133,15 @@ router.replace("/home");
               </Pressable>
             </Link>
           </View>
-          
+
           <Pressable
-  onPress={handleLogin}
-  disabled={loading}
-  className="bg-blue-600 py-3 rounded-lg items-center mb-6"
->
-  <Text className="text-white font-semibold">
-    {loading ? "Logging in..." : "Log In"}
-  </Text>
-</Pressable>
+            onPress={handleLogin}
+            disabled={loading}
+            className="bg-blue-600 py-3 rounded-lg items-center mb-6">
+            <Text className="text-white font-semibold">
+              {loading ? "Logging in..." : "Log In"}
+            </Text>
+          </Pressable>
           <View className="flex-row items-center mb-6">
             <View className="flex-1 h-px bg-gray-600" />
             <Text className="mx-3 text-gray-400 text-sm">Or</Text>
@@ -165,7 +159,6 @@ router.replace("/home");
               Continue with Facebook
             </Text>
           </Pressable>
-         
         </View>
       </View>
     </LinearGradient>

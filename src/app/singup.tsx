@@ -69,7 +69,10 @@ export default function SignUp() {
     setErrors(newErrors);
 
     if (Object.keys(newErrors).length > 0) {
-      Alert.alert("Missing or Invalid Fields", "Please check the highlighted fields.");
+      Alert.alert(
+        "Missing or Invalid Fields",
+        "Please check the highlighted fields.",
+      );
       return;
     }
 
@@ -88,16 +91,16 @@ export default function SignUp() {
 
       Alert.alert("Success", "Account created successfully!", [
         {
-  text: "OK",
-  onPress: () =>
-    router.replace({
-      pathname: "/",
-      params: {
-        email,
-        password,
-      },
-    }),
-},
+          text: "OK",
+          onPress: () =>
+            router.replace({
+              pathname: "/",
+              params: {
+                email,
+                password,
+              },
+            }),
+        },
       ]);
     } catch (error) {
       console.error("Signup error:", error);
@@ -116,8 +119,7 @@ export default function SignUp() {
       colors={["#2F6FED", "#1FD1D1"]}
       start={{ x: 0, y: 0 }}
       end={{ x: 0, y: 1 }}
-      style={{ flex: 1 }}
-    >
+      style={{ flex: 1 }}>
       <ScrollView showsVerticalScrollIndicator={false}>
         <View className="flex px-8 pt-12">
           <View className="flex-row justify-center items-center mb-10">
@@ -205,8 +207,7 @@ export default function SignUp() {
               onPress={() => setShowDatePicker(true)}
               className={`border rounded-lg px-4 py-3 mb-4 ${
                 errors.dob ? "border-red-500" : "border-gray-500"
-              }`}
-            >
+              }`}>
               <Text className={dob ? "text-black" : "text-gray-400"}>
                 {dob ? formattedDob : "DD/MM/YYYY"}
               </Text>
@@ -243,18 +244,16 @@ export default function SignUp() {
             </Text>
 
             <View className="border border-gray-500 rounded-lg mb-4 overflow-hidden">
-  <Picker
-    selectedValue={role}
-    onValueChange={(value) => {
-      
-      setRole(value as Role);
-    }}
-  >
-    <Picker.Item label="Customer" value="customer" />
-    <Picker.Item label="Restaurant" value="restaurant" />
-    <Picker.Item label="Admin" value="admin" />
-  </Picker>
-</View>
+              <Picker
+                selectedValue={role}
+                onValueChange={(value) => {
+                  setRole(value as Role);
+                }}>
+                <Picker.Item label="Customer" value="customer" />
+                <Picker.Item label="Restaurant" value="restaurant" />
+                <Picker.Item label="Admin" value="admin" />
+              </Picker>
+            </View>
 
             {/* Password */}
             <Text className="text-sm font-semibold mb-1 text-gray-400">
@@ -277,8 +276,7 @@ export default function SignUp() {
               disabled={loading}
               className={`py-3 rounded-lg items-center mb-6 mt-4 ${
                 loading ? "bg-gray-400" : "bg-blue-600"
-              }`}
-            >
+              }`}>
               {loading ? (
                 <ActivityIndicator color="white" />
               ) : (
