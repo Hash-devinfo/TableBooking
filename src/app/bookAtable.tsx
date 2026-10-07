@@ -94,7 +94,7 @@ export default function BookATable() {
             </View>
 
             <View>
-              <View className="flex-row items-center gap-1">
+              <View className="flex-row items-center justify-center gap-1">
                 <Ionicons name="location-outline" size={18} color="blue" />
                 <Text className="text-gray-600">2km</Text>
               </View>

@@ -3,6 +3,7 @@ import express, { Request, Response } from 'express';
 import cors from "cors";
 import connectDB from "./config/db.js";
 import authRoutes from "./routes/authRoutes.js"
+import bookingRoutes from "./routes/bookingRoutes.js"
 
 const app = express();
 
@@ -15,7 +16,7 @@ app.use(express.json());
 
 // APIs
 app.use("/api/auth", authRoutes);
-
+app.use("/api/bookings", bookingRoutes);
 
 
 const port = process.env.PORT || 3000;

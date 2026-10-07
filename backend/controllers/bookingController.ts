@@ -5,10 +5,12 @@ import { AuthRequest } from "../middleware/authMiddleware.js";
 
 export const createBooking = async (req: AuthRequest, res: Response) => {
   try {
-    const { date, time, guests, seatingType, request } = req.body;
+    const { date, time, guests, seatingType, request, floor } = req.body;
 
     if (!date || !time || !guests || !seatingType) {
-      return res.status(400).json({ message: "Date, time, guests, and seating type are required" });
+      return res
+        .status(400)
+        .json({ message: "Date, time, guests, and seating type are required" });
     }
 
     const booking = new Booking({
@@ -17,6 +19,7 @@ export const createBooking = async (req: AuthRequest, res: Response) => {
       time,
       guests,
       seatingType,
+      floor,
       request,
     });
 

@@ -1,19 +1,22 @@
-import { View, Text, Pressable, Image } from "react-native";
+import { View, Text, Pressable, Image, Alert } from "react-native";
 import React, { useState } from "react";
-import { Ionicons } from "@expo/vector-icons";
-import { Link } from "expo-router";
+import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
+import { Link, router } from "expo-router";
 import { useLocalSearchParams } from "expo-router";
 import { Checkbox, Button } from "react-native-paper";
+import { createBooking } from "@/api/bookingApi";
 const BookingConfirmation = () => {
   const [agreed, setAgreed] = useState(false);
-
-  const { date, time, guests, seatingType, request } = useLocalSearchParams<{
-    date: string;
-    time: string;
-    guests: string;
-    seatingType: string;
-    request: string;
-  }>();
+  const [loading, setLoading] = useState(false);
+  const { date, time, guests, seatingType, request, floor } =
+    useLocalSearchParams<{
+      date: string;
+      time: string;
+      guests: string;
+      seatingType: string;
+      request: string;
+      floor: string;
+    }>();
 
   const selectedDate = date ? new Date(date) : null;
   const formattedDate = selectedDate
@@ -24,6 +27,47 @@ const BookingConfirmation = () => {
         year: "numeric",
       })
     : "No date selected";
+
+  const handleConfirmBooking = async () => {
+    if (!selectedDate || !time || !guests || !seatingType) {
+      Alert.alert(
+        "Missing Information",
+        "Please go back and complete all booking details.",
+      );
+      return;
+    }
+
+    try {
+      setLoading(true);
+
+      await createBooking({
+        date: selectedDate.toISOString(),
+        time,
+        guests: Number(guests),
+        seatingType,
+        floor,
+        request: request || undefined,
+      });
+
+      Alert.alert(
+        "Booking Confirmed",
+        "Your table has been booked successfully!",
+        [
+          {
+            text: "OK",
+            onPress: () => router.replace("/bookingDetails"),
+          },
+        ],
+      );
+    } catch (error) {
+      Alert.alert(
+        "Booking Failed",
+        error instanceof Error ? error.message : "Something went wrong.",
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
   return (
     <View className=" flex-1 bg-white px-2 py-4">
       <View className="flex-row justify-between  mb-4">
@@ -40,7 +84,7 @@ const BookingConfirmation = () => {
         </Link>
       </View>
       <View className="flex  px-2">
-        <View className="bg-gray-300 px-4 py-4  rounded-lg">
+        <View className="bg-gray-100 px-4 py-4  rounded-lg">
           <View className="flex-row ">
             <Image
               source={require("../../assets/images/restaurantimages/download.jpeg")}
@@ -62,7 +106,7 @@ const BookingConfirmation = () => {
           </View>
           <View className="h-px bg-blue-400 mb-2 mt-4" />
           <View className="flex-row mt-4 items-center">
-            <View className="h-10 w-10 items-center justify-center rounded-full bg-gray-400">
+            <View className="h-10 w-10 items-center justify-center rounded-full bg-gray-300">
               <Ionicons name="calendar-outline" size={24} color="#2563EB" />
             </View>
 
@@ -76,7 +120,7 @@ const BookingConfirmation = () => {
             </View>
           </View>
           <View className="mt-4 flex-row items-center">
-            <View className="h-10 w-10 items-center justify-center rounded-full bg-gray-400">
+            <View className="h-10 w-10 items-center justify-center rounded-full bg-gray-300">
               <Ionicons name="time-outline" size={24} color="#2563EB" />
             </View>
 
@@ -90,22 +134,40 @@ const BookingConfirmation = () => {
             </View>
           </View>
           <View className="mt-4 flex-row items-center">
-            <View className="h-10 w-10 items-center justify-center rounded-full bg-gray-400">
+            <View className="h-10 w-10 items-center justify-center rounded-full bg-gray-300">
               <Ionicons name="people" size={24} color="#2563EB" />
             </View>
 
             <View className="px-2">
               <Text className="text-lg">Seat</Text>
               <Text
-                className="text-lg font-bold text-blue-500 "
+                className="text-lg font-bold  text-blue-500 "
                 style={{ color: "#3b82f6" }}>
                 {guests || "No guest"}
-                Person
+                 &nbsp; - Person
               </Text>
             </View>
           </View>
           <View className="mt-4 flex-row items-center">
-            <View className="h-10 w-10 items-center justify-center rounded-full bg-gray-400">
+            <View className="h-10 w-10 items-center justify-center rounded-full bg-gray-300">
+              <MaterialCommunityIcons
+                name="floor-plan"
+                size={24}
+                color="#2563EB"
+              />
+            </View>
+
+            <View className="px-2">
+              <Text className="text-lg">Floor</Text>
+              <Text
+                className="text-lg font-bold text-blue-500"
+                style={{ color: "#3b82f6" }}>
+                {floor || "NOT Selected"}
+              </Text>
+            </View>
+          </View>
+          <View className="mt-4 flex-row items-center">
+            <View className="h-10 w-10 items-center justify-center rounded-full bg-gray-300">
               <Ionicons name="restaurant" size={24} color="#2563EB" />
             </View>
 
@@ -139,7 +201,11 @@ const BookingConfirmation = () => {
             I agree to the terms and cancellation policy
           </Text>
         </Pressable>
-        <Button mode="contained" disabled={!agreed}>
+        <Button
+          mode="contained"
+          disabled={!agreed || loading}
+          loading={loading}
+          onPress={handleConfirmBooking}>
           Confirm Booking
         </Button>
       </View>

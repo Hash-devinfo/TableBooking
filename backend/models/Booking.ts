@@ -8,6 +8,7 @@ export interface IBooking extends Document {
   guests: number;
   seatingType: string;
   request?: string;
+  floor: string;
   status: "pending" | "confirmed" | "cancelled";
 }
 
@@ -23,15 +24,19 @@ const bookingSchema = new Schema<IBooking>(
     guests: { type: Number, required: true },
     seatingType: { type: String, required: true },
     request: { type: String },
+    floor: { type: String },
     status: {
       type: String,
       enum: ["pending", "confirmed", "cancelled"],
       default: "pending",
     },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
-const Booking: Model<IBooking> = mongoose.model<IBooking>("Booking", bookingSchema);
+const Booking: Model<IBooking> = mongoose.model<IBooking>(
+  "Booking",
+  bookingSchema,
+);
 
 export default Booking;

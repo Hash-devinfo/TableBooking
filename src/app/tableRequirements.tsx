@@ -24,6 +24,7 @@ const TableRequirements = () => {
   const [guestCount, setGuestCount] = useState(1);
   const [area, setArea] = useState("Indoor");
   const [specialRequest, setSpecialRequest] = useState("");
+  const [selectedFloor, setSelectedFloor] = useState("First Floor");
   const toggleFavorite = () => {
     const nextIsFavorite = !isFavorite;
     setIsFavorite(nextIsFavorite);
@@ -67,6 +68,7 @@ const TableRequirements = () => {
         time: selectedTime,
         guests: String(guestCount),
         seatingType: area,
+        floor: String(selectedFloor),
         request: specialRequest,
       },
     });
@@ -258,20 +260,45 @@ const TableRequirements = () => {
                 );
               })}
             </View>
-            <View className="mt-2">
-              <Text className="text-blue-600 font-bold text-xl mb-2">
-                Special Request
-              </Text>
-              <TextInput
-                value={specialRequest}
-                onChangeText={setSpecialRequest}
-                placeholder="Special Request (Optional)"
-                multiline
-                textAlignVertical="top"
-                className="h-[120px] rounded-lg border-2 border-blue-400 px-4 py-3 mb-8"
-              />
-            </View>
           </RadioButton.Group>
+          <View className="mt-2">
+            <Text className="text-blue-600 font-bold text-xl mb-2">
+              Select Floor
+            </Text>
+            <View className="flex-row justify-between">
+              {["First Floor", "Second Floor", "Third Floor"].map((floor) => {
+                const selected = selectedFloor === floor;
+
+                return (
+                  <Pressable
+                    key={floor}
+                    onPress={() => setSelectedFloor(floor)}
+                    className={`items-center justify-center rounded-full border-2 px-3 py-2 ${
+                      selected
+                        ? "border-blue-600 bg-blue-600"
+                        : "border-gray-300"
+                    }`}>
+                    <Text className={selected ? "text-white" : "text-gray-700"}>
+                      {floor}
+                    </Text>
+                  </Pressable>
+                );
+              })}
+            </View>
+          </View>
+          <View className="mt-2">
+            <Text className="text-blue-600 font-bold text-xl mb-2">
+              Special Request
+            </Text>
+            <TextInput
+              value={specialRequest}
+              onChangeText={setSpecialRequest}
+              placeholder="Special Request (Optional)"
+              multiline
+              textAlignVertical="top"
+              className="h-[120px] rounded-lg border-2 border-blue-400 px-4 py-3 mb-8"
+            />
+          </View>
         </View>
       </ScrollView>
       <View className="px-4 pb-6 pt-3 bg-white">
