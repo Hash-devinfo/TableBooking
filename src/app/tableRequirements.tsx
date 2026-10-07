@@ -23,7 +23,7 @@ const TableRequirements = () => {
   const [date, setDate] = useState(new Date());
   const [showPicker, setShowPicker] = useState(false);
   const [guestCount, setGuestCount] = useState(1);
-  const [area, setArea] = useState("first");
+  const [area, setArea] = useState("Indoor");
   const [specialRequest, setSpecialRequest] = useState("");
   const toggleFavorite = () => {
     const nextIsFavorite = !isFavorite;
