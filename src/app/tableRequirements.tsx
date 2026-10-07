@@ -19,7 +19,6 @@ import React from "react";
 
 const TableRequirements = () => {
   const [isFavorite, setIsFavorite] = useState(false);
-  const [rating, setRating] = useState(0);
   const [date, setDate] = useState(new Date());
   const [showPicker, setShowPicker] = useState(false);
   const [guestCount, setGuestCount] = useState(1);
