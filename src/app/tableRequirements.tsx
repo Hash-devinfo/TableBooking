@@ -17,13 +17,14 @@ import { Button, RadioButton } from "react-native-paper";
 import { router, Link } from "expo-router";
 import React from "react";
 
-const tableRequirements = () => {
+const TableRequirements = () => {
   const [isFavorite, setIsFavorite] = useState(false);
   const [rating, setRating] = useState(0);
   const [date, setDate] = useState(new Date());
   const [showPicker, setShowPicker] = useState(false);
   const [guestCount, setGuestCount] = useState(1);
   const [area, setArea] = useState("first");
+  const [specialRequest, setSpecialRequest] = useState("");
   const toggleFavorite = () => {
     const nextIsFavorite = !isFavorite;
     setIsFavorite(nextIsFavorite);
@@ -54,6 +55,23 @@ const tableRequirements = () => {
   });
 
   const [selectedTime, setSelectedTime] = useState<string | null>(null);
+  const handleContinue = () => {
+    if (!selectedTime) {
+      Alert.alert("Select a time", "Please choose a time first.");
+      return;
+    }
+
+    router.push({
+      pathname: "/bookingConfirmation",
+      params: {
+        date: date.toISOString(),
+        time: selectedTime,
+        guests: String(guestCount),
+        seatingType: area,
+        request: specialRequest,
+      },
+    });
+  };
 
   return (
     <View className="flex-1 bg-white px-2 py-4">
@@ -61,6 +79,19 @@ const tableRequirements = () => {
         className="flex-1"
         showsVerticalScrollIndicator={false}
         nestedScrollEnabled>
+        <View className="flex-row justify-between  mb-4">
+          <Link href={"/bookAtable"} asChild>
+            <Pressable className=" w-12 h-12 ">
+              <Ionicons name="arrow-back" size={24} color="#2563EB" />
+            </Pressable>
+          </Link>
+          <Text className="text-blue-600 font-bold text-3xl">Book a Table</Text>
+          <Link href={"/notification"} asChild>
+            <Pressable className="w-12 h-12  ">
+              <Ionicons name="notifications" size={26} color="#2563EB" />
+            </Pressable>
+          </Link>
+        </View>
         <View className="flex-row  items-start">
           <ImageBackground
             source={require("../../assets/images/restaurantimages/download.jpeg")}
@@ -81,21 +112,14 @@ const tableRequirements = () => {
               Italian
             </Text>
             <View className="flex-row gap-1 items-center">
-              {Array.from({ length: 5 }, (_, index) => {
-                const starNumber = index + 1;
-
-                return (
-                  <Pressable
-                    key={starNumber}
-                    onPress={() => setRating(starNumber)}>
-                    <Ionicons
-                      name={starNumber <= rating ? "star" : "star-outline"}
-                      size={18}
-                      color={starNumber <= rating ? "blue" : "gray"}
-                    />
-                  </Pressable>
-                );
-              })}
+              {Array.from({ length: 5 }, (_, index) => (
+                <Ionicons
+                  key={index}
+                  name="star-outline"
+                  size={20}
+                  color="blue"
+                />
+              ))}
               <Text className="px-2 font-semibold text-blue-700">0.0</Text>
               <Text className="text-gray-500">(0)</Text>
             </View>
@@ -217,9 +241,9 @@ const tableRequirements = () => {
           <RadioButton.Group onValueChange={setArea} value={area}>
             <View className="gap-2">
               {[
-                { value: "first", label: "Indoor" },
-                { value: "second", label: "Outdoor" },
-                { value: "third", label: "Smoking" },
+                { value: "Indoor", label: "Indoor" },
+                { value: "Outdoor", label: "Outdoor" },
+                { value: "Smoking", label: "Smoking" },
               ].map((option) => {
                 const selected = area === option.value;
 
@@ -240,6 +264,8 @@ const tableRequirements = () => {
                 Special Request
               </Text>
               <TextInput
+                value={specialRequest}
+                onChangeText={setSpecialRequest}
                 placeholder="Special Request (Optional)"
                 multiline
                 textAlignVertical="top"
@@ -250,14 +276,12 @@ const tableRequirements = () => {
         </View>
       </ScrollView>
       <View className="px-4 pb-6 pt-3 bg-white">
-        <Link href={"/tableRequirements"} asChild>
-          <Button icon="" mode="contained">
-            Continue
-          </Button>
-        </Link>
+        <Button mode="contained" onPress={handleContinue}>
+          Continue
+        </Button>
       </View>
     </View>
   );
 };
 
-export default tableRequirements;
+export default TableRequirements;
