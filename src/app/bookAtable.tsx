@@ -194,6 +194,10 @@ useEffect(() => {
               <MaterialCommunityIcons name="tree-outline"  size={16} color="blue" />
               <Text className="text-gray-700 text-sm">Outdoor</Text>
             </View>
+            <View className="flex-row items-center gap-1 bg-gray-100 rounded-full px-3 py-2">
+              <MaterialCommunityIcons name="smoking"  size={16} color="blue" />
+              <Text className="text-gray-700 text-sm">Smoking</Text>
+            </View>
           </View>
           <Text className="text-xl font-bold text-blue-700 mt-6">Table Capacity</Text>
           <View className="flex-row items-center gap-3 mt-3 mb-6">
@@ -216,7 +220,14 @@ useEffect(() => {
               <MaterialCommunityIcons name="floor-plan"  size={16} color="blue" />
               <Text className="text-gray-700 text-sm">First Floor</Text>
             </View>
-            
+            <View className="flex-row items-center gap-1 bg-gray-100 rounded-full px-3 py-2">
+              <MaterialCommunityIcons name="floor-plan"  size={16} color="blue" />
+              <Text className="text-gray-700 text-sm">Second Floor</Text>
+            </View>
+            <View className="flex-row items-center gap-1 bg-gray-100 rounded-full px-3 py-2">
+              <MaterialCommunityIcons name="floor-plan"  size={16} color="blue" />
+              <Text className="text-gray-700 text-sm">Third Floor</Text>
+            </View>
           </View>
           
           <Text className="text-xl font-bold text-blue-700 mt-6 ">Amenities</Text>
