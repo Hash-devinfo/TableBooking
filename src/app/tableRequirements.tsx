@@ -14,6 +14,7 @@ import DateTimePicker, {
   DateTimePickerEvent,
 } from "@react-native-community/datetimepicker";
 import { Button, RadioButton } from "react-native-paper";
+
 import { router, Link } from "expo-router";
 import React from "react";
 
@@ -25,6 +26,7 @@ const TableRequirements = () => {
   const [area, setArea] = useState("Indoor");
   const [specialRequest, setSpecialRequest] = useState("");
   const [selectedFloor, setSelectedFloor] = useState("First Floor");
+
   const toggleFavorite = () => {
     const nextIsFavorite = !isFavorite;
     setIsFavorite(nextIsFavorite);
@@ -55,6 +57,7 @@ const TableRequirements = () => {
   });
 
   const [selectedTime, setSelectedTime] = useState<string | null>(null);
+
   const handleContinue = () => {
     if (!selectedTime) {
       Alert.alert("Select a time", "Please choose a time first.");
@@ -80,20 +83,21 @@ const TableRequirements = () => {
         className="flex-1"
         showsVerticalScrollIndicator={false}
         nestedScrollEnabled>
-        <View className="flex-row justify-between  mb-4">
+        <View className="flex-row justify-between mb-4">
           <Link href={"/bookAtable"} asChild>
-            <Pressable className=" w-12 h-12 ">
+            <Pressable className="w-12 h-12">
               <Ionicons name="arrow-back" size={24} color="#2563EB" />
             </Pressable>
           </Link>
           <Text className="text-blue-600 font-bold text-3xl">Book a Table</Text>
           <Link href={"/notification"} asChild>
-            <Pressable className="w-12 h-12  ">
+            <Pressable className="w-12 h-12">
               <Ionicons name="notifications" size={26} color="#2563EB" />
             </Pressable>
           </Link>
         </View>
-        <View className="flex-row  items-start">
+
+        <View className="flex-row items-start">
           <ImageBackground
             source={require("../../assets/images/restaurantimages/download.jpeg")}
             resizeMode="cover"
@@ -144,7 +148,8 @@ const TableRequirements = () => {
 
         <View className="h-px bg-blue-400 mb-2 mt-2" />
 
-        <View className="mt-4 ">
+        {/* Date Selection */}
+        <View className="mt-4">
           <Text className="text-blue-600 font-bold text-xl">Select Date:</Text>
 
           <Pressable
@@ -164,10 +169,12 @@ const TableRequirements = () => {
             />
           )}
         </View>
+
+        {/* Time Selection */}
         <Text className="text-blue-600 font-bold text-xl">Select Timings:</Text>
         <View className="h-[250px]">
           <ScrollView nestedScrollEnabled>
-            <View className="mt-3 mb- px-4">
+            <View className="mt-3 px-4">
               {Array.from(
                 { length: Math.ceil(timeSlots.length / 3) },
                 (_, rowIndex) => (
@@ -200,12 +207,14 @@ const TableRequirements = () => {
             </View>
           </ScrollView>
         </View>
-        <View className="mt-2 flex-row justify-between">
+
+        {/* Seat Counter */}
+        <View className="mt-4 flex-row justify-between">
           <Text className="text-blue-600 font-bold text-xl">
             Number of Seats
           </Text>
           <Text className="text-blue-600 font-bold text-sm">
-            Avaliable 50 Seats
+            Available 50 Seats
           </Text>
         </View>
         <View className="flex-row items-center gap-16 mt-2">
@@ -234,8 +243,8 @@ const TableRequirements = () => {
             <Ionicons name="add" size={24} color="#333" />
           </Pressable>
         </View>
-
-        <View className="mt-2">
+        {/* Seating Type & Floor */}
+        <View className="mt-4">
           <Text className="text-blue-600 font-bold text-xl mb-2">
             Seating type
           </Text>
@@ -261,7 +270,8 @@ const TableRequirements = () => {
               })}
             </View>
           </RadioButton.Group>
-          <View className="mt-2">
+
+          <View className="mt-4">
             <Text className="text-blue-600 font-bold text-xl mb-2">
               Select Floor
             </Text>
@@ -286,14 +296,18 @@ const TableRequirements = () => {
               })}
             </View>
           </View>
-          <View className="mt-2">
+
+          <View className="mt-4">
             <Text className="text-blue-600 font-bold text-xl mb-2">
               Special Request
             </Text>
             <TextInput
               value={specialRequest}
               onChangeText={setSpecialRequest}
-              placeholder="Special Request (Optional)"
+              placeholder={`Special requests :
+• Table location (window, main hall, or terrace)
+• Seating preference (booth or standard)
+(optional)`}
               multiline
               textAlignVertical="top"
               className="h-[120px] rounded-lg border-2 border-blue-400 px-4 py-3 mb-8"
@@ -301,6 +315,7 @@ const TableRequirements = () => {
           </View>
         </View>
       </ScrollView>
+
       <View className="px-4 pb-6 pt-3 bg-white">
         <Button mode="contained" onPress={handleContinue}>
           Continue

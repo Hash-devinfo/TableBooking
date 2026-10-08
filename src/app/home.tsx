@@ -57,7 +57,7 @@ export default function Home() {
           placeholder="Search"
         />
       </View>
-      <View className="flex-row items-center rounded-full mt-4 justify-center">
+      <View className="flex-row items-center rounded-full mt-4 justify-between">
         <Link href={"/bookAtable"}>
           <Button icon="" mode="contained">
             Book a table

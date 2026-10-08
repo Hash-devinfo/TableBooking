@@ -9,6 +9,7 @@ export interface IBooking extends Document {
   seatingType: string;
   request?: string;
   floor: string;
+
   status: "pending" | "confirmed" | "cancelled";
 }
 
@@ -25,6 +26,7 @@ const bookingSchema = new Schema<IBooking>(
     seatingType: { type: String, required: true },
     request: { type: String },
     floor: { type: String },
+
     status: {
       type: String,
       enum: ["pending", "confirmed", "cancelled"],

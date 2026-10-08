@@ -1,4 +1,4 @@
-import { View, Text, Pressable, Image, Alert } from "react-native";
+import { View, Text, Pressable, Image, Alert, ScrollView } from "react-native";
 import React, { useState } from "react";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { Link, router } from "expo-router";
@@ -40,7 +40,7 @@ const BookingConfirmation = () => {
     try {
       setLoading(true);
 
-      await createBooking({
+      const data = await createBooking({
         date: selectedDate.toISOString(),
         time,
         guests: Number(guests),
@@ -55,7 +55,11 @@ const BookingConfirmation = () => {
         [
           {
             text: "OK",
-            onPress: () => router.replace("/bookingDetails"),
+            onPress: () =>
+              router.replace({
+                pathname: "/bookingDetails",
+                params: { id: data.booking._id },
+              }),
           },
         ],
       );
@@ -144,7 +148,7 @@ const BookingConfirmation = () => {
                 className="text-lg font-bold  text-blue-500 "
                 style={{ color: "#3b82f6" }}>
                 {guests || "No guest"}
-                 &nbsp; - Person
+                &nbsp; - Person
               </Text>
             </View>
           </View>
@@ -166,6 +170,7 @@ const BookingConfirmation = () => {
               </Text>
             </View>
           </View>
+
           <View className="mt-4 flex-row items-center">
             <View className="h-10 w-10 items-center justify-center rounded-full bg-gray-300">
               <Ionicons name="restaurant" size={24} color="#2563EB" />
@@ -180,13 +185,14 @@ const BookingConfirmation = () => {
               </Text>
             </View>
           </View>
-          <View className="flex items-center mt-2">
-            <Text
-              className="font-semibold text-base"
-              style={{ color: "#3b82f6" }}>
-              {request}
+          <ScrollView
+            showsVerticalScrollIndicator={false}
+            className="mt-4  border border-blue-500 rounded-lg"
+            style={{ height: 50 }}>
+            <Text className="font-semibold px-2 text-blue-500">
+              {request || "No special Requirements"}
             </Text>
-          </View>
+          </ScrollView>
         </View>
         <Pressable
           onPress={() => setAgreed((checked) => !checked)}
