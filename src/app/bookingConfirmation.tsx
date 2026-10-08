@@ -13,7 +13,7 @@ const BookingConfirmation = () => {
       date: string;
       time: string;
       guests: string;
-      seatingType: string;
+      seatingType: string; 
       request: string;
       floor: string;
     }>();

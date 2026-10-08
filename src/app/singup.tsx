@@ -25,7 +25,7 @@ type Errors = {
   email?: boolean;
   dob?: boolean;
   phone?: boolean;
-  password?: boolean;
+  password?: boolean; 
 };
 
 export default function SignUp() {

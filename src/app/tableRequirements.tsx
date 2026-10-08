@@ -120,7 +120,7 @@ const TableRequirements = () => {
               {Array.from({ length: 5 }, (_, index) => (
                 <Ionicons
                   key={index}
-                  name="star-outline"
+                  name="star-outline" 
                   size={20}
                   color="blue"
                 />

@@ -37,7 +37,7 @@ const STATUS_CONFIG: Record<
     subtitle:
       "The restaurant is reviewing your request.\nPlease wait for confirmation",
     pillLabel: "Pending",
-    pillClass: "bg-gray-100",
+    pillClass: "bg-blue-100",
     pillTextClass: "text-gray-600",
     canCancel: true,
   },
@@ -46,7 +46,7 @@ const STATUS_CONFIG: Record<
     title: "Booking Confirmed",
     subtitle: "Your table is reserved.\nWe look forward to seeing you!",
     pillLabel: "Confirmed",
-    pillClass: "bg-green-100",
+    pillClass: "bg-blue-100",
     pillTextClass: "text-green-700",
     canCancel: true,
   },
@@ -55,7 +55,7 @@ const STATUS_CONFIG: Record<
     title: "Booking Cancelled",
     subtitle: "This reservation has been cancelled",
     pillLabel: "Cancelled",
-    pillClass: "bg-gray-100",
+    pillClass: "bg-blue-100",
     pillTextClass: "text-gray-600",
     canCancel: false,
   },
@@ -199,7 +199,9 @@ const BookingDetails = () => {
     month: "short",
     day: "numeric",
   });
-  const bookingCode = `#${booking._id.slice(-12).toUpperCase()}`;
+  const bookingCode = `${RESTAURANT.name.slice(0, 3).toUpperCase()}#${booking._id
+    .slice(-6)
+    .toUpperCase()}`;
 
   return (
     <ScrollView

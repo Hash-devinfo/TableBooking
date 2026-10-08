@@ -64,7 +64,7 @@ export default function Home() {
           </Button>
         </Link>
         <Button icon="" mode="contained" onPress={handleLogout}>
-          LogOut
+          <Ionicons name="log-out-outline" size={22} color="white" />
         </Button>
       </View>
     </View>
