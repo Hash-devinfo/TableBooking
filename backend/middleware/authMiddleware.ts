@@ -2,12 +2,17 @@
 import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
 
+// Single, unified interface extending Express Request
 export interface AuthRequest extends Request {
   userId?: string;
   role?: string;
 }
 
-export const protect = (req: AuthRequest, res: Response, next: NextFunction) => {
+export const protect = (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction
+) => {
   const authHeader = req.headers.authorization;
 
   if (!authHeader || !authHeader.startsWith("Bearer ")) {
@@ -29,4 +34,19 @@ export const protect = (req: AuthRequest, res: Response, next: NextFunction) => 
   } catch (error) {
     return res.status(401).json({ message: "Not authorized, invalid token" });
   }
+};
+
+export const authorize = (...roles: string[]) => {
+  return (req: AuthRequest, res: Response, next: NextFunction) => {
+    
+
+    if (!req.role || !roles.includes(req.role)) {
+      return res.status(403).json({
+        message: "You do not have permission to perform this action",
+      });
+    }
+
+    // Call next() to move to the next middleware/controller
+    next();
+  };
 };
