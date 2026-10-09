@@ -4,6 +4,21 @@ import { Request, Response } from "express";
 import bcrypt from "bcrypt";
 import User from "../models/User.js";
 import jwt from "jsonwebtoken";
+import Restaurant from "../models/Restaurant.js";
+import { AuthRequest } from "../middleware/authMiddleware.js";
+
+
+
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const PAKISTANI_PHONE_REGEX = /^03\d{9}$/;
+const PASSWORD_REGEX =
+  /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+const normalizePhone = (value: unknown) => {
+  const digits = String(value ?? "").trim();
+  return /^3\d{9}$/.test(digits) ? `0${digits}` : digits;
+};
+
+
 
 
 // signup controller
@@ -152,6 +167,22 @@ export const login = async (req: Request, res: Response) => {
     });
   } catch (error) {
     console.error("Login error:", error);
+    return res.status(500).json({ message: "Something went wrong" });
+  }
+};
+
+
+export const getMe = async (req: AuthRequest, res: Response) => {
+  try {
+    const user = await User.findById(req.userId).select("-password");
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    return res.status(200).json({ user });
+  } catch (error) {
+    console.error("Get profile error:", error);
     return res.status(500).json({ message: "Something went wrong" });
   }
 };

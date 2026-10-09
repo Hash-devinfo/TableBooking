@@ -90,7 +90,7 @@ const FavoriteCard = ({
         accessibilityRole="button"
         accessibilityLabel={`Remove ${item.name} from favourites`}
         className="h-8 w-8 items-center justify-center self-start">
-        <Ionicons name="heart" size={22} color="#15803d" />
+        <Ionicons name="heart" size={22} color="blue" />
       </Pressable>
     </Pressable>
 
