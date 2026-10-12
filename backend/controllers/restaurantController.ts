@@ -106,7 +106,6 @@ export const getAllRestaurants = async (req: AuthRequest, res: Response) => {
   }
 };
 
-// 2. Get Single Restaurant by ID (Public)
 export const getRestaurantById = async (req: AuthRequest, res: Response) => {
   try {
     const { id } = req.params;
@@ -127,7 +126,6 @@ export const getRestaurantById = async (req: AuthRequest, res: Response) => {
   }
 };
 
-// 3. Get Currently Logged-In Owner's Restaurant (Protected - Restaurant Role)
 export const getMyRestaurant = async (req: AuthRequest, res: Response) => {
   try {
     const restaurant = await Restaurant.findOne({ owner: req.userId });
@@ -143,7 +141,6 @@ export const getMyRestaurant = async (req: AuthRequest, res: Response) => {
   }
 };
 
-// 4. Update Restaurant Details (Protected - Owner or Admin)
 export const updateRestaurant = async (req: AuthRequest, res: Response) => {
   try {
     const { id } = req.params;
@@ -177,7 +174,6 @@ export const updateRestaurant = async (req: AuthRequest, res: Response) => {
   }
 };
 
-// 5. Delete Restaurant (Protected - Admin or Owner)
 export const deleteRestaurant = async (req: AuthRequest, res: Response) => {
   try {
     const { id } = req.params;

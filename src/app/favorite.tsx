@@ -1,38 +1,30 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import {
   FlatList,
   Image,
   Pressable,
   Text,
   View,
+  ActivityIndicator,
+  Alert,
   type ImageSourcePropType,
 } from "react-native";
-import { Link, router } from "expo-router";
+import { Link, router, useFocusEffect } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
+import * as SecureStore from "expo-secure-store";
+import { getFavorites, toggleFavorite } from "../api/favoritesApi"; // Update path if needed
 
 type FavoriteRestaurant = {
-  id: string;
+  _id: string;
   name: string;
-  cuisine: string;
-  rating: number;
-  reviewCount: number;
-  location: string;
-  image: ImageSourcePropType;
+  cuisine?: string;
+  rating?: number;
+  reviewCount?: number;
+  location?: string;
+  image?: string | ImageSourcePropType | null;
 };
 
-const RESTAURANT_DETAILS_ROUTE = "/bookATable";
-
-const INITIAL_FAVORITES: FavoriteRestaurant[] = [
-  {
-    id: "1",
-    name: "Monal",
-    cuisine: "Desi",
-    rating: 0,
-    reviewCount: 0,
-    location: "Lahore, Punjab",
-    image: require("../../assets/images/restaurantimages/download.jpeg"),
-  },
-];
+const TOKEN_KEY = "authToken"; // same key used in index.tsx and bookingApi.ts
 
 const Stars = ({ rating }: { rating: number }) => (
   <View className="flex-row">
@@ -54,60 +46,142 @@ const FavoriteCard = ({
 }: {
   item: FavoriteRestaurant;
   onRemove: (id: string) => void;
-}) => (
-  <View className="pt-3">
-    <Pressable onPress={() => router.push("/bookAtable")} className="flex-row">
-      <Image
-        source={item.image}
-        resizeMode="cover"
-        className="h-32 w-36 rounded-l-2xl"
-      />
+}) => {
+  const [imageFailed, setImageFailed] = useState(false);
 
-      <View className="flex-1 justify-between px-3 py-1">
-        <Text numberOfLines={2} className="text-lg font-bold text-blue-600">
-          {item.name}
-        </Text>
-        <Text numberOfLines={1} className="text-sm text-blue-600">
-          {item.cuisine}
-        </Text>
-        <View className="flex-row items-center">
-          <Stars rating={item.rating} />
-          <Text className="ml-2 text-base font-semibold text-blue-700">
-            {item.rating.toFixed(1)}
+  const imageSource: ImageSourcePropType | null = item.image
+    ? typeof item.image === "string"
+      ? { uri: item.image }
+      : item.image
+    : null;
+
+  const showImage = imageSource !== null && !imageFailed;
+  const initial = item.name?.trim().charAt(0).toUpperCase() || "?";
+  const rating = item.rating || 0;
+
+  return (
+    <View className="pt-3">
+      <Pressable
+        onPress={() =>
+          router.push({
+            pathname: "../bookATable",
+            params: { id: item._id },
+          })
+        }
+        className="flex-row"
+      >
+        {showImage ? (
+          <Image
+            source={imageSource}
+            resizeMode="cover"
+            onError={() => setImageFailed(true)}
+            className="h-32 w-36 rounded-l-2xl"
+          />
+        ) : (
+          <View className="h-32 w-36 items-center justify-center rounded-l-2xl bg-blue-100">
+            <Text className="text-5xl font-bold text-blue-600">{initial}</Text>
+          </View>
+        )}
+
+        <View className="flex-1 justify-between px-3 py-1">
+          <Text numberOfLines={2} className="text-lg font-bold text-blue-600">
+            {item.name}
           </Text>
-          <Text className="ml-1 text-base text-blue-700">
-            ({item.reviewCount})
+          <Text numberOfLines={1} className="text-sm text-blue-600">
+            {item.cuisine || "Various Cuisines"}
+          </Text>
+          <View className="flex-row items-center">
+            <Stars rating={rating} />
+            <Text className="ml-2 text-base font-semibold text-blue-700">
+              {rating.toFixed(1)}
+            </Text>
+            <Text className="ml-1 text-base text-blue-700">
+              ({item.reviewCount || 0})
+            </Text>
+          </View>
+          <Text numberOfLines={1} className="text-xs text-blue-600">
+            {item.location || "Lahore, Punjab"}
           </Text>
         </View>
-        <Text numberOfLines={1} className="text-xs text-blue-600">
-          {item.location}
-        </Text>
-      </View>
 
-      <Pressable
-        onPress={() => onRemove(item.id)}
-        hitSlop={8}
-        accessibilityRole="button"
-        accessibilityLabel={`Remove ${item.name} from favourites`}
-        className="h-8 w-8 items-center justify-center self-start">
-        <Ionicons name="heart" size={22} color="blue" />
+        <Pressable
+          onPress={() => onRemove(item._id)}
+          hitSlop={8}
+          accessibilityRole="button"
+          accessibilityLabel={`Remove ${item.name} from favourites`}
+          className="h-8 w-8 items-center justify-center self-start"
+        >
+          <Ionicons name="heart" size={22} color="blue" />
+        </Pressable>
       </Pressable>
-    </Pressable>
 
-    <View className="mt-3 h-px bg-gray-300" />
-  </View>
-);
+      <View className="mt-3 h-px bg-gray-300" />
+    </View>
+  );
+};
 
 const Favorite = () => {
-  const [favorites, setFavorites] = useState(INITIAL_FAVORITES);
+  const [favorites, setFavorites] = useState<FavoriteRestaurant[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const removeFavorite = (id: string) => {
-    setFavorites((prev) => prev.filter((restaurant) => restaurant.id !== id));
+  useFocusEffect(
+    useCallback(() => {
+      let active = true;
+
+      const loadFavorites = async () => {
+        try {
+          const token = await SecureStore.getItemAsync(TOKEN_KEY);
+
+          const data = await getFavorites(token ?? "");
+          if (active) setFavorites(data);
+        } catch (error: any) {
+          const status = error?.response?.status;
+          const serverMsg = error?.response?.data?.message;
+
+          Alert.alert(
+            "Error",
+            `Could not fetch your favourite restaurants.\n\n` +
+              `Status: ${status ?? "no response"}\n` +
+              `Message: ${serverMsg ?? error?.message}`
+          );
+        } finally {
+          if (active) setLoading(false);
+        }
+      };
+
+      loadFavorites();
+
+      return () => {
+        active = false;
+      };
+    }, [])
+  );
+
+  const removeFavorite = async (id: string) => {
+    const previous = favorites;
+
+    try {
+      const token = await SecureStore.getItemAsync(TOKEN_KEY);
+
+      setFavorites((prev) => prev.filter((r) => r._id !== id));
+      await toggleFavorite(token ?? "", id);
+    } catch (error) {
+      setFavorites(previous);
+      Alert.alert("Error", "Failed to update favorite status.");
+    }
   };
+
+  if (loading) {
+    return (
+      <View className="flex-1 items-center justify-center bg-white">
+        <ActivityIndicator size="large" color="#2563EB" />
+      </View>
+    );
+  }
 
   return (
     <View className="flex-1 bg-white">
-      <View className="mb-4 flex-row items-center justify-between mt-2">
+      <View className="mb-4 flex-row items-center justify-between mt-2 px-4">
         <Link href="/home" asChild>
           <Pressable className="h-10 w-10 justify-center">
             <Ionicons name="arrow-back" size={26} color="blue" />
@@ -124,7 +198,7 @@ const Favorite = () => {
       <FlatList
         className="px-4"
         data={favorites}
-        keyExtractor={(item) => item.id}
+        keyExtractor={(item) => item._id}
         renderItem={({ item }) => (
           <FavoriteCard item={item} onRemove={removeFavorite} />
         )}

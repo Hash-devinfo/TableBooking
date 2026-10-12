@@ -57,6 +57,16 @@ export default function Home() {
           placeholder="Search"
         />
       </View>
+      <View className="flex-row items-center justify-between my-2">
+  <Text className="font-bold text-blue-500 text-xl">Featured Restaurant</Text>
+
+  <Link href="/listRestaurants" asChild>
+    <Pressable className="flex-row items-center">
+      <Text className="mr-1 text-blue-500 text-lg">See All</Text>
+      <Ionicons name="arrow-forward" size={20} color="blue" />
+    </Pressable>
+  </Link>
+</View>
       <View className="flex-row items-center rounded-full mt-4 justify-between">
         <Link href={"/bookAtable"}>
           <Button icon="" mode="contained">
