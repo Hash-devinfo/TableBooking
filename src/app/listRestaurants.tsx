@@ -66,7 +66,7 @@ const RestaurantCard = ({
     <Pressable
       onPress={() =>
         router.push({
-          pathname: "../",
+          pathname: "/bookAtable",
           params: { id: item._id },
         })
       }
@@ -102,8 +102,8 @@ const RestaurantCard = ({
           <Pressable onPress={() => onToggleFavorite(item._id)} className="p-1">
             <Ionicons
               name={isFavorite ? "heart" : "heart-outline"}
-              size={20}
-              color={isFavorite ? "#ef4444" : "#9ca3af"}
+              size={24}
+              color={isFavorite ? "blue" : "#9ca3af"}
             />
           </Pressable>
         </View>
@@ -234,7 +234,7 @@ export default function ListRestaurants() {
   if (loading) {
     return (
       <View className="flex-1 items-center justify-center bg-white">
-        <ActivityIndicator size="large" color="#047857" />
+        <ActivityIndicator size="large" color="blue" />
       </View>
     );
   }
@@ -346,7 +346,7 @@ export default function ListRestaurants() {
         showsVerticalScrollIndicator={false}
         ListEmptyComponent={
           <View className="items-center pt-24">
-            <Ionicons name="restaurant-outline" size={56} color="#d1d5db" />
+            <Ionicons name="restaurant-outline" size={56} color="blue" />
             <Text className="mt-4 text-lg font-bold text-gray-900">
               No Restaurants Found
             </Text>

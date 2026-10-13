@@ -9,18 +9,26 @@ import {
   Image,
   Alert,
   ActivityIndicator,
+  StyleSheet,
 } from "react-native";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { router, useLocalSearchParams } from "expo-router";
+import * as SecureStore from "expo-secure-store";
 import { getRestaurantById, Restaurant } from "../api/restaurantApi";
-import { toggleFavorite } from "../api/favoritesApi";
+import {
+  getFavorites,
+  toggleFavorite,
+  type FavoriteRestaurant,
+} from "../api/favoritesApi";
 
 const TABS = ["Overview", "Menu", "Reviews"] as const;
 type Tab = (typeof TABS)[number];
 
+const TOKEN_KEY = "authToken"; 
+
 export default function BookATable() {
   const { id } = useLocalSearchParams<{ id: string }>();
-
+  const [failedCover, setFailedCover] = useState<string | null>(null);
   const [restaurant, setRestaurant] = useState<Restaurant | null>(null);
   const [loading, setLoading] = useState(true);
   const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0);
@@ -28,7 +36,7 @@ export default function BookATable() {
   const [isFavorite, setIsFavorite] = useState(false);
   const [isAboutExpanded, setIsAboutExpanded] = useState(false);
 
-  // Fetch single restaurant details by ID
+  
   useEffect(() => {
     const fetchRestaurantDetails = async () => {
       try {
@@ -36,8 +44,18 @@ export default function BookATable() {
           Alert.alert("Error", "No restaurant ID provided");
           return;
         }
-        const data = await getRestaurantById(id);
+
+        const token = await SecureStore.getItemAsync(TOKEN_KEY);
+
+        const [data, favs] = await Promise.all([
+          getRestaurantById(id),
+          token
+            ? getFavorites(token).catch(() => [] as FavoriteRestaurant[])
+            : Promise.resolve([] as FavoriteRestaurant[]),
+        ]);
+
         setRestaurant(data);
+        setIsFavorite(favs.some((f) => f._id === id));
       } catch (error) {
         console.error("Error fetching restaurant:", error);
         Alert.alert("Error", "Failed to load restaurant details");
@@ -48,8 +66,6 @@ export default function BookATable() {
 
     fetchRestaurantDetails();
   }, [id]);
-
-  // Image Slideshow Timer
   useEffect(() => {
     if (!restaurant?.images || restaurant.images.length === 0) return;
 
@@ -60,30 +76,33 @@ export default function BookATable() {
     return () => clearInterval(interval);
   }, [restaurant]);
 
-  // Toggle Favorite API Handler
   const handleToggleFavorite = async () => {
     if (!id) return;
-    const nextIsFavorite = !isFavorite;
-    setIsFavorite(nextIsFavorite);
+
+    const previous = isFavorite;
+    setIsFavorite(!previous);
 
     try {
-      const token = "token";
-      await toggleFavorite(token, id);
+      const token = await SecureStore.getItemAsync(TOKEN_KEY);
+      const res = await toggleFavorite(token ?? "", id);
+      setIsFavorite(res.isFavorite);
+
+      const name = restaurant?.name ?? "Restaurant";
       Alert.alert(
-        nextIsFavorite ? "Added to favorites" : "Removed from favorites",
-        nextIsFavorite
-          ? "Added to your favorites."
-          : "Removed from your favorites.",
+        res.isFavorite ? "Added to favorites" : "Removed from favorites",
+        res.isFavorite
+          ? `"${name}" added to your favorites.`
+          : `"${name}" removed from your favorites.`,
       );
     } catch (error) {
-      // Revert UI on failure
-      setIsFavorite(!nextIsFavorite);
+      setIsFavorite(previous); // rollback
       Alert.alert("Error", "Could not update favorites.");
     }
   };
 
   const backPage = () => {
-    router.replace("/home");
+    if (router.canGoBack()) router.back();
+    else router.replace("/home");
   };
 
   const navigateToBooking = () => {
@@ -101,19 +120,38 @@ export default function BookATable() {
     );
   }
 
-  const imagesList =
-    restaurant?.images && restaurant.images.length > 0
-      ? restaurant.images
-      : ["https://via.placeholder.com/300"];
+  const imagesList = restaurant?.images?.filter(Boolean) ?? [];
+  const hasImages = imagesList.length > 0;
+
+  const coverUri = hasImages
+    ? imagesList[currentPhotoIndex % imagesList.length]
+    : null;
+  const showCover = !!coverUri && failedCover !== coverUri;
+
+  const initial = restaurant?.name?.trim().charAt(0).toUpperCase() || "?";
 
   return (
     <View className="flex-1 bg-white">
       <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
-        {/* Cover Photo */}
-        <ImageBackground
-          source={{ uri: imagesList[currentPhotoIndex] }}
-          resizeMode="cover"
-          className="w-full h-72 justify-between">
+        
+        <View className="w-full h-72 justify-between bg-blue-600">
+          {showCover ? (
+            <Image
+              source={{ uri: coverUri! }}
+              resizeMode="cover"
+              onError={() => setFailedCover(coverUri)}
+              style={StyleSheet.absoluteFill}
+            />
+          ) : (
+            <View
+              style={StyleSheet.absoluteFill}
+              className="items-center justify-center">
+              <Text className="text-9xl font-bold text-white opacity-40">
+                {initial}
+              </Text>
+            </View>
+          )}
+
           <View className="flex-row justify-between px-4 pt-4">
             <Pressable
               onPress={backPage}
@@ -128,7 +166,7 @@ export default function BookATable() {
               <Ionicons
                 name={isFavorite ? "heart" : "heart-outline"}
                 size={22}
-                color="white"
+                color={isFavorite ? "blue" : "white"}
               />
             </Pressable>
           </View>
@@ -141,7 +179,7 @@ export default function BookATable() {
               {restaurant?.cuisines || "Cuisines"}
             </Text>
           </View>
-        </ImageBackground>
+        </View>
 
         {/* Content Details */}
         <View className="flex-1 -mt-6 bg-white rounded-t-3xl px-4 pt-6">
@@ -160,11 +198,11 @@ export default function BookATable() {
               <View className="flex-row items-center justify-center gap-1">
                 <Ionicons name="location-outline" size={18} color="blue" />
                 <Text className="text-gray-600">
-                  {restaurant?.city || "Lahore"}
+                  {restaurant?.city}
                 </Text>
               </View>
               <Text className="mt-2 text-gray-600">
-                {restaurant?.province || "Punjab"}
+               {restaurant?.city}, {restaurant?.province}
               </Text>
             </View>
           </View>
@@ -206,16 +244,17 @@ export default function BookATable() {
 
           {activeTab === "Overview" ? (
             <>
-              {/* Photo Thumbnails */}
-              <View className="flex-row gap-3 mt-6">
-                {imagesList.slice(0, 3).map((photoUri, index) => (
-                  <Image
-                    key={index}
-                    source={{ uri: photoUri }}
-                    className="w-24 h-24 rounded-xl"
-                  />
-                ))}
-              </View>
+              {hasImages && (
+                <View className="flex-row gap-3 mt-6">
+                  {imagesList.slice(0, 3).map((photoUri, index) => (
+                    <Image
+                      key={index}
+                      source={{ uri: photoUri }}
+                      className="w-24 h-24 rounded-xl"
+                    />
+                  ))}
+                </View>
+              )}
 
               {/* About Us */}
               <Text className="text-xl font-bold text-blue-700 mt-6">
@@ -254,6 +293,7 @@ export default function BookATable() {
                     Close: {restaurant?.closingTime || "11:45 PM"}
                   </Text>
                 </View>
+                
               </View>
 
               {/* Available Seating Types */}
