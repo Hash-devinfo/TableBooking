@@ -7,12 +7,12 @@ import {
   View,
   ActivityIndicator,
   Alert,
-  type ImageSourcePropType,
 } from "react-native";
 import { Link, router, useFocusEffect } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import * as SecureStore from "expo-secure-store";
 import { getFavorites, toggleFavorite } from "../api/favoritesApi"; // Update path if needed
+import { resolveImageUrl } from "../api/restaurantApi";
 
 type FavoriteRestaurant = {
   _id: string;
@@ -21,7 +21,7 @@ type FavoriteRestaurant = {
   rating?: number;
   reviewCount?: number;
   location?: string;
-  image?: string | ImageSourcePropType | null;
+  image?: string | null;
 };
 
 const TOKEN_KEY = "authToken"; // same key used in index.tsx and bookingApi.ts
@@ -49,13 +49,8 @@ const FavoriteCard = ({
 }) => {
   const [imageFailed, setImageFailed] = useState(false);
 
-  const imageSource: ImageSourcePropType | null = item.image
-    ? typeof item.image === "string"
-      ? { uri: item.image }
-      : item.image
-    : null;
-
-  const showImage = imageSource !== null && !imageFailed;
+  const imageUrl = resolveImageUrl(item.image ?? undefined);
+  const showImage = !!imageUrl && !imageFailed;
   const initial = item.name?.trim().charAt(0).toUpperCase() || "?";
   const rating = item.rating || 0;
 
@@ -64,15 +59,14 @@ const FavoriteCard = ({
       <Pressable
         onPress={() =>
           router.push({
-            pathname: "../bookATable",
+            pathname: "/bookAtable",
             params: { id: item._id },
           })
         }
-        className="flex-row"
-      >
+        className="flex-row">
         {showImage ? (
           <Image
-            source={imageSource}
+            source={{ uri: imageUrl }}
             resizeMode="cover"
             onError={() => setImageFailed(true)}
             className="h-32 w-36 rounded-l-2xl"
@@ -109,8 +103,7 @@ const FavoriteCard = ({
           hitSlop={8}
           accessibilityRole="button"
           accessibilityLabel={`Remove ${item.name} from favourites`}
-          className="h-8 w-8 items-center justify-center self-start"
-        >
+          className="h-8 w-8 items-center justify-center self-start">
           <Ionicons name="heart" size={22} color="blue" />
         </Pressable>
       </Pressable>
@@ -142,7 +135,7 @@ const Favorite = () => {
             "Error",
             `Could not fetch your favourite restaurants.\n\n` +
               `Status: ${status ?? "no response"}\n` +
-              `Message: ${serverMsg ?? error?.message}`
+              `Message: ${serverMsg ?? error?.message}`,
           );
         } finally {
           if (active) setLoading(false);
@@ -154,7 +147,7 @@ const Favorite = () => {
       return () => {
         active = false;
       };
-    }, [])
+    }, []),
   );
 
   const removeFavorite = async (id: string) => {
