@@ -20,11 +20,12 @@ import {
   toggleFavorite,
   type FavoriteRestaurant,
 } from "../api/favoritesApi";
+import { resolveImageUrl } from "../api/restaurantApi";
 
 const TABS = ["Overview", "Menu", "Reviews"] as const;
 type Tab = (typeof TABS)[number];
 
-const TOKEN_KEY = "authToken"; 
+const TOKEN_KEY = "authToken";
 
 export default function BookATable() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -36,7 +37,6 @@ export default function BookATable() {
   const [isFavorite, setIsFavorite] = useState(false);
   const [isAboutExpanded, setIsAboutExpanded] = useState(false);
 
-  
   useEffect(() => {
     const fetchRestaurantDetails = async () => {
       try {
@@ -120,7 +120,9 @@ export default function BookATable() {
     );
   }
 
-  const imagesList = restaurant?.images?.filter(Boolean) ?? [];
+  const imagesList = (restaurant?.images ?? [])
+    .map((u) => resolveImageUrl(u))
+    .filter((u): u is string => !!u);
   const hasImages = imagesList.length > 0;
 
   const coverUri = hasImages
@@ -133,7 +135,6 @@ export default function BookATable() {
   return (
     <View className="flex-1 bg-white">
       <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
-        
         <View className="w-full h-72 justify-between bg-blue-600">
           {showCover ? (
             <Image
@@ -197,12 +198,10 @@ export default function BookATable() {
             <View>
               <View className="flex-row items-center justify-center gap-1">
                 <Ionicons name="location-outline" size={18} color="blue" />
-                <Text className="text-gray-600">
-                  {restaurant?.city}
-                </Text>
+                <Text className="text-gray-600">{restaurant?.city}</Text>
               </View>
               <Text className="mt-2 text-gray-600">
-               {restaurant?.city}, {restaurant?.province}
+                {restaurant?.city}, {restaurant?.province}
               </Text>
             </View>
           </View>
@@ -293,7 +292,6 @@ export default function BookATable() {
                     Close: {restaurant?.closingTime || "11:45 PM"}
                   </Text>
                 </View>
-                
               </View>
 
               {/* Available Seating Types */}

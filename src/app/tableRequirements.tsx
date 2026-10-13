@@ -23,13 +23,13 @@ import {
   toggleFavorite,
   type FavoriteRestaurant,
 } from "../api/favoritesApi";
+import { resolveImageUrl } from "../api/restaurantApi";
 
 const TOKEN_KEY = "authToken"; // same key used in index.tsx and bookingApi.ts
 
 const DEFAULT_SEATING = ["Indoor", "Outdoor", "Smoking"];
 const DEFAULT_FLOORS = ["First Floor", "Second Floor", "Third Floor"];
 
-// Accepts "9:00 AM", "11:45 PM", "09:00", "21:30"
 const parseTimeToMinutes = (value?: string): number | null => {
   if (!value) return null;
   const match = value.trim().match(/^(\d{1,2})(?::(\d{2}))?\s*(AM|PM)?$/i);
@@ -81,7 +81,9 @@ const TableRequirements = () => {
   const [showPicker, setShowPicker] = useState(false);
   const [guestCount, setGuestCount] = useState(1);
   const [selectedArea, setSelectedArea] = useState<string | null>(null);
-  const [selectedFloorState, setSelectedFloorState] = useState<string | null>(null);
+  const [selectedFloorState, setSelectedFloorState] = useState<string | null>(
+    null,
+  );
   const [specialRequest, setSpecialRequest] = useState("");
   const [selectedTime, setSelectedTime] = useState<string | null>(null);
 
@@ -118,43 +120,48 @@ const TableRequirements = () => {
 
   const seatingOptions = useMemo(
     () =>
-      restaurant?.seatingTypes?.length ? restaurant.seatingTypes : DEFAULT_SEATING,
-    [restaurant]
+      restaurant?.seatingTypes?.length
+        ? restaurant.seatingTypes
+        : DEFAULT_SEATING,
+    [restaurant],
   );
   const floorOptions = useMemo(
     () =>
-      restaurant?.floorNumbers?.length ? restaurant.floorNumbers : DEFAULT_FLOORS,
-    [restaurant]
+      restaurant?.floorNumbers?.length
+        ? restaurant.floorNumbers
+        : DEFAULT_FLOORS,
+    [restaurant],
   );
   const timeSlots = useMemo(
     () => buildTimeSlots(restaurant?.openingTime, restaurant?.closingTime),
-    [restaurant]
+    [restaurant],
   );
   // Is this slot already in the past? Only matters when the chosen date is today.
-const isSlotPast = (time: string) => {
-  if (date.toDateString() !== new Date().toDateString()) return false;
+  const isSlotPast = (time: string) => {
+    if (date.toDateString() !== new Date().toDateString()) return false;
 
-  const slot = parseTimeToMinutes(time);
-  if (slot === null) return false;
+    const slot = parseTimeToMinutes(time);
+    if (slot === null) return false;
 
-  const open = parseTimeToMinutes(restaurant?.openingTime) ?? 9 * 60;
-  if (slot < open) return false; // after-midnight slot, belongs to the next day
+    const open = parseTimeToMinutes(restaurant?.openingTime) ?? 9 * 60;
+    if (slot < open) return false; // after-midnight slot, belongs to the next day
 
-  const now = new Date();
-  return slot <= now.getHours() * 60 + now.getMinutes();
-};
+    const now = new Date();
+    return slot <= now.getHours() * 60 + now.getMinutes();
+  };
 
-// If the date changes and the chosen time is now in the past, clear it
-useEffect(() => {
-  if (selectedTime && isSlotPast(selectedTime)) setSelectedTime(null);
-}, [date]);
+  // If the date changes and the chosen time is now in the past, clear it
+  useEffect(() => {
+    if (selectedTime && isSlotPast(selectedTime)) setSelectedTime(null);
+  }, [date]);
 
   // Selected values default to the first real option
   const area = selectedArea ?? seatingOptions[0];
   const selectedFloor = selectedFloorState ?? floorOptions[0];
 
   const maxSeats =
-    typeof restaurant?.availableSeats === "number" && restaurant.availableSeats > 0
+    typeof restaurant?.availableSeats === "number" &&
+    restaurant.availableSeats > 0
       ? restaurant.availableSeats
       : undefined;
 
@@ -176,7 +183,8 @@ useEffect(() => {
 
   const goBack = () => {
     if (router.canGoBack()) router.back();
-    else router.replace({ pathname: "/bookAtable", params: { id: restaurantId } });
+    else
+      router.replace({ pathname: "/bookAtable", params: { id: restaurantId } });
   };
 
   const onChange = (event: DateTimePickerEvent, selectedDate?: Date) => {
@@ -213,8 +221,9 @@ useEffect(() => {
     );
   }
 
-  const imageUri = restaurant?.images?.[0];
-  const showImage = !!imageUri && !imageFailed;
+  const imageUrl = resolveImageUrl(restaurant?.images?.[0]);
+
+  const showImage = !!imageUrl && !imageFailed;
   const initial = restaurant?.name?.trim().charAt(0).toUpperCase() || "?";
   const rating = restaurant?.rating || 0;
   const cuisines = String(restaurant?.cuisines ?? "")
@@ -248,14 +257,16 @@ useEffect(() => {
         <View className="flex-row items-start">
           {showImage ? (
             <Image
-              source={{ uri: imageUri }}
+              source={{ uri: imageUrl }}
               resizeMode="cover"
               onError={() => setImageFailed(true)}
               className="w-40 h-40 rounded-l-lg"
             />
           ) : (
             <View className="w-40 h-40 rounded-l-lg items-center justify-center bg-blue-100">
-              <Text className="text-6xl font-bold text-blue-600">{initial}</Text>
+              <Text className="text-6xl font-bold text-blue-600">
+                {initial}
+              </Text>
             </View>
           )}
 
@@ -329,48 +340,51 @@ useEffect(() => {
         {/* Time Selection */}
         <Text className="text-blue-600 font-bold text-xl">Select Timings:</Text>
         <View className="h-[250px]">
-  <ScrollView nestedScrollEnabled>
-    {timeSlots.length === 0 ? (
-      <Text className="mt-6 text-center text-gray-500">
-        No time slots available
-      </Text>
-    ) : (
-      <View className="mt-3 flex-row flex-wrap px-2">
-        {timeSlots.map((time) => {
-          const selected = selectedTime === time;
-          const disabled = isSlotPast(time);
+          <ScrollView nestedScrollEnabled>
+            {timeSlots.length === 0 ? (
+              <Text className="mt-6 text-center text-gray-500">
+                No time slots available
+              </Text>
+            ) : (
+              <View className="mt-3 flex-row flex-wrap px-2">
+                {timeSlots.map((time) => {
+                  const selected = selectedTime === time;
+                  const disabled = isSlotPast(time);
 
-          return (
-            <View key={time} style={{ width: "33.333%" }} className="p-1.5">
-              <Pressable
-                disabled={disabled}
-                onPress={() => setSelectedTime(time)}
-                className={`items-center rounded-full border px-2 py-2 ${
-                  selected
-                    ? "border-blue-600 bg-blue-600"
-                    : disabled
-                      ? "border-gray-100 bg-gray-50"
-                      : "border-gray-200 bg-gray-100"
-                }`}>
-                <Text
-                  numberOfLines={1}
-                  className={
-                    selected
-                      ? "text-sm text-white"
-                      : disabled
-                        ? "text-sm text-gray-300"
-                        : "text-sm text-gray-700"
-                  }>
-                  {time}
-                </Text>
-              </Pressable>
-            </View>
-          );
-        })}
-      </View>
-    )}
-  </ScrollView>
-</View>
+                  return (
+                    <View
+                      key={time}
+                      style={{ width: "33.333%" }}
+                      className="p-1.5">
+                      <Pressable
+                        disabled={disabled}
+                        onPress={() => setSelectedTime(time)}
+                        className={`items-center rounded-full border px-2 py-2 ${
+                          selected
+                            ? "border-blue-600 bg-blue-600"
+                            : disabled
+                              ? "border-gray-100 bg-gray-50"
+                              : "border-gray-200 bg-gray-100"
+                        }`}>
+                        <Text
+                          numberOfLines={1}
+                          className={
+                            selected
+                              ? "text-sm text-white"
+                              : disabled
+                                ? "text-sm text-gray-300"
+                                : "text-sm text-gray-700"
+                          }>
+                          {time}
+                        </Text>
+                      </Pressable>
+                    </View>
+                  );
+                })}
+              </View>
+            )}
+          </ScrollView>
+        </View>
 
         {/* Seat Counter */}
         <View className="mt-4 flex-row justify-between">
@@ -403,7 +417,7 @@ useEffect(() => {
               if (maxSeats !== undefined && guestCount >= maxSeats) {
                 Alert.alert(
                   "No more seats",
-                  `Only ${maxSeats} seats are available.`
+                  `Only ${maxSeats} seats are available.`,
                 );
                 return;
               }

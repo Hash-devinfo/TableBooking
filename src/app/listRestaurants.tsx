@@ -7,6 +7,7 @@ import {
   Image,
   ActivityIndicator,
   Alert,
+  RefreshControl,
 } from "react-native";
 import React, { useState, useEffect } from "react";
 import { Ionicons } from "@expo/vector-icons";
@@ -15,6 +16,8 @@ import { Searchbar } from "react-native-paper";
 import * as SecureStore from "expo-secure-store";
 import { getAllRestaurants } from "@/api/restaurantApi";
 import { getFavorites, toggleFavorite } from "../api/favoritesApi";
+import { resolveImageUrl } from "../api/restaurantApi";
+import NavigationBar from "./components/navigationBar";
 
 type Restaurant = {
   _id: string;
@@ -22,17 +25,9 @@ type Restaurant = {
   cuisines: string;
   city: string;
   province: string;
-  address: string;
-  phone: string;
-  description: string;
   images: string[];
-  openingTime: string;
-  closingTime: string;
   rating: number;
   reviewCount: number;
-  floorNumbers: string[];
-  availableSeats: number;
-  seatingTypes: string[];
   distance?: string;
 };
 
@@ -60,7 +55,7 @@ const RestaurantCard = ({
   onToggleFavorite: (id: string) => void;
 }) => {
   const [imageFailed, setImageFailed] = useState(false);
-  const imageUrl = item.images?.[0];
+  const imageUrl = resolveImageUrl(item.images?.[0]);
 
   return (
     <Pressable
@@ -139,7 +134,7 @@ export default function ListRestaurants() {
   const [restaurants, setRestaurants] = useState<Restaurant[]>([]);
   const [favoriteIds, setFavoriteIds] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
-
+  const [refreshing, setRefreshing] = useState(false);
   const getStoredToken = async (): Promise<string | null> => {
     try {
       return await SecureStore.getItemAsync("authToken");
@@ -149,38 +144,47 @@ export default function ListRestaurants() {
     }
   };
 
-  useEffect(() => {
-    const loadData = async () => {
-      try {
-        const token = await getStoredToken();
+  const loadData = async () => {
+    try {
+      const token = await getStoredToken();
 
-        const restaurantsData = await getAllRestaurants();
-        setRestaurants(restaurantsData);
+      const restaurantsData = await getAllRestaurants();
+      setRestaurants(restaurantsData);
 
-        const uniqueCuisines = Array.from(
-          new Set(
-            restaurantsData
-              .map((restaurant) => restaurant.cuisines)
-              .filter(Boolean),
-          ),
-        );
-        setCuisines(["All", ...uniqueCuisines]);
+      const uniqueCuisines = Array.from(
+        new Set(
+          restaurantsData
+            .map((restaurant) => restaurant.cuisines)
+            .filter(Boolean),
+        ),
+      );
+      setCuisines(["All", ...uniqueCuisines]);
 
-        if (token) {
-          const userFavorites = await getFavorites(token);
-          setFavoriteIds(userFavorites.map((favorite) => favorite._id));
-        } else {
-          setFavoriteIds([]);
-        }
-      } catch (error) {
-        console.error("Failed to load restaurant data:", error);
-      } finally {
-        setLoading(false);
+      if (token) {
+        const userFavorites = await getFavorites(token);
+        setFavoriteIds(userFavorites.map((favorite) => favorite._id));
+      } else {
+        setFavoriteIds([]);
       }
-    };
+    } catch (error) {
+      console.error("Failed to load restaurant data:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
+  useEffect(() => {
     void loadData();
   }, []);
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    try {
+      await loadData();
+    } finally {
+      setRefreshing(false);
+    }
+  };
 
   const handleToggleFavorite = async (restaurantId: string) => {
     try {
@@ -240,7 +244,10 @@ export default function ListRestaurants() {
   }
 
   return (
-    <View className="flex-1 bg-white px-2 py-4">
+    <View className="flex-1 bg-white">
+
+    
+    <View className="flex-1  px-2 py-4">
       <View className="flex-row justify-between  mb-4">
         <Link href={"/home"} asChild>
           <Pressable className=" w-12 h-12 ">
@@ -300,7 +307,7 @@ export default function ListRestaurants() {
       </View>
 
       <View className="flex-row items-center justify-between mb-4">
-        <View className="flex-row rounded-full bg-gray-100 p-1">
+        <View className="flex-row rounded-full bg-gray-100 p-1 mt-2">
           <Pressable
             onPress={() => setActiveTab("Nearby")}
             className={`px-5 py-2 rounded-full ${
@@ -334,6 +341,9 @@ export default function ListRestaurants() {
       </View>
 
       <FlatList
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
         data={filteredRestaurants}
         keyExtractor={(item) => item._id}
         renderItem={({ item }) => (
@@ -356,6 +366,8 @@ export default function ListRestaurants() {
           </View>
         }
       />
+      </View>
+      <NavigationBar/>
     </View>
   );
 }

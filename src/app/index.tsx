@@ -6,7 +6,6 @@ import { useState, useEffect } from "react";
 import { Image, Pressable, Text, TextInput, View } from "react-native";
 import * as SecureStore from "expo-secure-store";
 
-
 export default function App() {
   const [rememberMe, setRememberMe] = useState(false);
   const { email: signupEmail, password: signupPassword } =
@@ -21,13 +20,13 @@ export default function App() {
     typeof signupPassword === "string" ? signupPassword : "",
   );
   const getStoredToken = async (): Promise<string | null> => {
-  try {
-    return await SecureStore.getItemAsync("authToken");
-  } catch (error) {
-    console.error("Error reading auth token:", error);
-    return null;
-  }
-};
+    try {
+      return await SecureStore.getItemAsync("authToken");
+    } catch (error) {
+      console.error("Error reading auth token:", error);
+      return null;
+    }
+  };
   useEffect(() => {
     const checkRememberedLogin = async () => {
       try {

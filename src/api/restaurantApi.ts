@@ -36,3 +36,19 @@ export const getAllRestaurants = async (): Promise<Restaurant[]> => {
   const response = await API.get("/restaurants");
   return response.data.restaurants;
 };
+
+export const resolveImageUrl = (url?: string): string | undefined => {
+  if (!url) return undefined;
+
+  try {
+    
+    if (url.includes("google.com/imgres")) {
+      const real = new URL(url).searchParams.get("imgurl");
+      if (real) url = real;
+    }
+  } catch {
+    // fall through with the original url
+  }
+
+  return url.replace(/^http:\/\//i, "https://");
+};
