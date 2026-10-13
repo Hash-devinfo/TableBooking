@@ -1,8 +1,7 @@
 import { useEffect, useState, type ComponentProps } from "react";
 import { Pressable, Text, View } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-import { router, type Href, Link, usePathname } from "expo-router";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { router, type Href,  usePathname } from "expo-router";
 type IconName = ComponentProps<typeof MaterialCommunityIcons>["name"];
 
 type Tab = {
@@ -51,7 +50,7 @@ export default function NavigationBar({
   useEffect(() => {
     if (routeIndex !== -1) setValue(routeIndex);
   }, [routeIndex]);
-  const insets = useSafeAreaInsets();
+
 
   return (
     <View className="flex-row bg-blue-400 shadow-md  ">
@@ -77,7 +76,7 @@ export default function NavigationBar({
             accessibilityState={{ selected: isActive }}
             className="flex-1 items-center justify-center pt-2 pb-10">
             {isActive && (
-              <View className="absolute top-0 h-1 w-3/5 rounded-b bg-blue-00" />
+              <View className="absolute top-0 h-1 w-3/5 rounded-b bg-blue-800" />
             )}
 
             <MaterialCommunityIcons name={item.icon} size={30} color={color} />

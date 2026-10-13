@@ -6,7 +6,7 @@ const LocationPage = () => {
   return (
     <View className='flex-1 justify-between bg-white'>
     
-          <Text>Booking List Coming Soon</Text>
+          <Text>Location Coming Soon</Text>
     
           <NavigationBar />
         </View>
