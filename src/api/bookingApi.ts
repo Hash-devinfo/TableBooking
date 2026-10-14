@@ -4,13 +4,14 @@ const API_URL = "http://10.0.2.2:3000/api";
 
 export type Booking = {
   _id: string;
+  restaurantId: string;
   date: string;
   time: string;
   guests: number;
   floor?: string;
   seatingType: string;
   request?: string;
-  status: "pending" | "confirmed" | "cancelled";
+  status: "pending" | "confirmed" | "rejected" | "cancelled";
   createdAt: string;
 };
 
@@ -38,6 +39,7 @@ const parseResponse = async (response: Response, fallbackMessage: string) => {
 };
 
 export const createBooking = async (bookingData: {
+  restaurantId: string;
   date: string;
   time: string;
   guests: number;

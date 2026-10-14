@@ -3,6 +3,7 @@ import mongoose, { Schema, Document, Model } from "mongoose";
 
 export interface IBooking extends Document {
   customer: mongoose.Types.ObjectId;
+  restaurant: mongoose.Types.ObjectId;
   date: Date;
   time: string;
   guests: number;
@@ -20,6 +21,11 @@ const bookingSchema = new Schema<IBooking>(
       ref: "User",
       required: true,
     },
+    restaurant: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Restaurant",
+      required: true,
+    },
     date: { type: Date, required: true },
     time: { type: String, required: true },
     guests: { type: Number, required: true },
@@ -29,7 +35,7 @@ const bookingSchema = new Schema<IBooking>(
 
     status: {
       type: String,
-      enum: ["pending", "confirmed", "cancelled"],
+      enum: ["pending", "confirmed", "rejected", "cancelled"],
       default: "pending",
     },
   },

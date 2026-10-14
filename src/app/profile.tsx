@@ -50,14 +50,14 @@ const Profile = () => {
     }, [loadProfile]),
   );
 
- const handleLogout = async () => {
-  try {
-    await SecureStore.deleteItemAsync("authToken");
-    router.replace("/");
-  } catch (error) {
-    console.error("Failed to log out:", error);
-  }
-};
+  const handleLogout = async () => {
+    try {
+      await SecureStore.deleteItemAsync("authToken");
+      router.replace("/");
+    } catch (error) {
+      console.error("Failed to log out:", error);
+    }
+  };
 
   return (
     <View className="flex-1 justify-between bg-white ">
@@ -134,7 +134,9 @@ const Profile = () => {
         </View>
         <View className="mt-4 border-1 bg-red-700 rounded-full justify-center flex ">
           <Button>
-            <Text className="text-xl font-bold text-white">Delete Account </Text>
+            <Text className="text-xl font-bold text-white">
+              Delete Account{" "}
+            </Text>
           </Button>
         </View>
       </ScrollView>

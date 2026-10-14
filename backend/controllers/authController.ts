@@ -53,7 +53,8 @@ const createToken = (userId: string, role: string) => {
 
 export const signup = async (req: Request, res: Response) => {
   try {
-    const { firstName, lastName, email, dob, phone, password } = req.body;
+    const { firstName, lastName, email, dob, phone, address, password } =
+      req.body;
     const requestedRole = req.body.role ?? "customer";
 
     if (!firstName || !lastName || !email || !dob || !phone || !password) {
@@ -61,7 +62,9 @@ export const signup = async (req: Request, res: Response) => {
     }
 
     if (typeof email !== "string" || !EMAIL_REGEX.test(email.trim())) {
-      return res.status(400).json({ message: "Please enter a valid email address" });
+      return res
+        .status(400)
+        .json({ message: "Please enter a valid email address" });
     }
 
     const normalizedPhone = normalizePhone(phone);
@@ -85,7 +88,8 @@ export const signup = async (req: Request, res: Response) => {
     const parsedDob = parseDob(dob);
     if (!parsedDob) {
       return res.status(400).json({
-        message: "Date of birth must be a valid date in YYYY-MM-DD or DD-MM-YYYY format",
+        message:
+          "Date of birth must be a valid date in YYYY-MM-DD or DD-MM-YYYY format",
       });
     }
 
@@ -98,7 +102,9 @@ export const signup = async (req: Request, res: Response) => {
       return res.status(409).json({ message: "Email already registered" });
     }
     if (existingUser && String(existingUser.phone) === normalizedPhone) {
-      return res.status(409).json({ message: "Phone number already registered" });
+      return res
+        .status(409)
+        .json({ message: "Phone number already registered" });
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -109,6 +115,7 @@ export const signup = async (req: Request, res: Response) => {
       dob: parsedDob,
       phone: normalizedPhone,
       role: requestedRole,
+      address: address,
       password: hashedPassword,
     });
 
@@ -135,7 +142,11 @@ export const login = async (req: Request, res: Response) => {
   try {
     const { email, password } = req.body;
 
-    if (typeof email !== "string" || typeof password !== "string" || !password) {
+    if (
+      typeof email !== "string" ||
+      typeof password !== "string" ||
+      !password
+    ) {
       return res.status(400).json({
         message: "Email and password are required",
       });

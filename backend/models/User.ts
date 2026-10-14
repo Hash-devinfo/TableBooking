@@ -12,6 +12,7 @@ export interface IUser extends Document {
   phone: string;
   password: string;
   favorites: mongoose.Types.ObjectId[];
+  address: string;
   role: UserRole;
   comparePassword(candidatePassword: string): Promise<boolean>;
 }
@@ -49,7 +50,7 @@ const userSchema = new Schema<IUser>(
       type: String,
       required: true,
     },
-    
+    address: { type: String },
     role: {
       type: String,
       enum: ["customer", "restaurant", "admin"],
@@ -58,10 +59,10 @@ const userSchema = new Schema<IUser>(
     },
     favorites: [{ type: Schema.Types.ObjectId, ref: "Restaurant" }],
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 userSchema.methods.comparePassword = function (
-  candidatePassword: string
+  candidatePassword: string,
 ): Promise<boolean> {
   return bcrypt.compare(candidatePassword, this.password);
 };

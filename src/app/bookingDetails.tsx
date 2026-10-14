@@ -11,13 +11,9 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import { router, useFocusEffect, useLocalSearchParams } from "expo-router";
 import { cancelBooking, getMyBookings, type Booking } from "../api/bookingApi";
+import { getRestaurantById, type Restaurant } from "../api/restaurantApi";
 
 type IconName = keyof typeof Ionicons.glyphMap;
-
-const RESTAURANT = {
-  name: "Basilico by Sara - Lake City",
-  address: "Lahore, Punjab",
-};
 
 const STATUS_CONFIG: Record<
   Booking["status"],
@@ -59,6 +55,16 @@ const STATUS_CONFIG: Record<
     pillTextClass: "text-gray-600",
     canCancel: false,
   },
+  rejected: {
+    icon: "close",
+    title: "Request Declined",
+    subtitle:
+      "The restaurant couldn't accept this booking.\nYou can try another time.",
+    pillLabel: "Declined",
+    pillClass: "bg-blue-100",
+    pillTextClass: "text-red-600",
+    canCancel: false,
+  },
 };
 
 const DashedDivider = () => (
@@ -95,9 +101,20 @@ const InfoColumn = ({
   </View>
 );
 
+const getRestaurantRef = (booking: Booking | null) => {
+  const ref = (booking as any)?.restaurant;
+  if (!ref) return { id: undefined, name: undefined };
+  if (typeof ref === "string") return { id: ref, name: undefined };
+  return {
+    id: ref._id as string | undefined,
+    name: ref.name as string | undefined,
+  };
+};
+
 const BookingDetails = () => {
   const { id } = useLocalSearchParams<{ id: string }>();
   const [booking, setBooking] = useState<Booking | null>(null);
+  const [restaurant, setRestaurant] = useState<Restaurant | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [cancelling, setCancelling] = useState(false);
@@ -123,6 +140,39 @@ const BookingDetails = () => {
       setLoading(false);
     }
   }, [id]);
+
+  useFocusEffect(
+    useCallback(() => {
+      loadBooking();
+    }, [loadBooking]),
+  );
+
+  // While the booking is pending, check again every 10 seconds
+  useEffect(() => {
+    if (booking?.status !== "pending") return;
+
+    const interval = setInterval(loadBooking, 10000);
+    return () => clearInterval(interval);
+  }, [booking?.status, loadBooking]);
+
+  // Load the restaurant once we know which one this booking belongs to
+  const { id: restaurantId, name: populatedName } = getRestaurantRef(booking);
+
+  useEffect(() => {
+    if (!restaurantId) return;
+
+    let active = true;
+
+    getRestaurantById(restaurantId)
+      .then((data) => {
+        if (active) setRestaurant(data);
+      })
+      .catch((e) => console.log("Could not load restaurant:", e?.message));
+
+    return () => {
+      active = false;
+    };
+  }, [restaurantId]);
 
   useFocusEffect(
     useCallback(() => {
@@ -199,10 +249,16 @@ const BookingDetails = () => {
     month: "short",
     day: "numeric",
   });
-  const bookingCode = `${RESTAURANT.name.slice(0, 3).toUpperCase()}#${booking._id
-    .slice(-6)
-    .toUpperCase()}`;
 
+  const restaurantName = restaurant?.name ?? populatedName ?? "Restaurant";
+  const restaurantAddress =
+    [restaurant?.address, restaurant?.city].filter(Boolean).join(", ") ||
+    "Address unavailable";
+
+  const bookingCode = `${restaurantName
+    .replace(/[^a-z0-9]/gi, "")
+    .slice(0, 3)
+    .toUpperCase()}#${booking._id.slice(-6).toUpperCase()}`;
   return (
     <ScrollView
       className="flex-1 bg-white"
@@ -227,7 +283,7 @@ const BookingDetails = () => {
           <View className="flex-row items-center p-6">
             <View className="h-12 w-12 items-center justify-center rounded-xl border border-green-100 bg-green-100">
               <Text className="text-2xl font-bold text-blue-700">
-                {RESTAURANT.name.charAt(0)}
+                {restaurantName.charAt(0).toUpperCase()}
               </Text>
             </View>
 
@@ -235,14 +291,14 @@ const BookingDetails = () => {
               <Text
                 numberOfLines={1}
                 className="text-base font-bold text-blue-600">
-                {RESTAURANT.name}
+                {restaurantName}
               </Text>
               <View className="mt-1 flex-row items-center">
                 <Ionicons name="location-sharp" size={14} color="blue" />
                 <Text
                   numberOfLines={1}
                   className="ml-1 flex-1 text-xs text-blue-500">
-                  {RESTAURANT.address}
+                  {restaurantAddress}
                 </Text>
               </View>
             </View>
