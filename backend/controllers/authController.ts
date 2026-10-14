@@ -2,6 +2,8 @@ import type { Request, Response } from "express";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import User from "../models/User.js";
+import Booking from "../models/Booking.js";
+import Restaurant from "../models/Restaurant.js";
 import type { AuthRequest } from "../middleware/authMiddleware.js";
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -187,6 +189,141 @@ export const getMe = async (req: AuthRequest, res: Response) => {
     return res.status(200).json({ user });
   } catch (error) {
     console.error("Get profile error:", error);
+    return res.status(500).json({ message: "Something went wrong" });
+  }
+};
+
+export const updateAccount = async (req: AuthRequest, res: Response) => {
+  try {
+    const user = await User.findById(req.userId);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    const {
+      firstName,
+      lastName,
+      phone,
+      address,
+      dob,
+      email,
+      currentPassword,
+      newPassword,
+    } = req.body;
+
+    // Simple profile fields
+    if (firstName !== undefined) {
+      if (typeof firstName !== "string" || !firstName.trim()) {
+        return res.status(400).json({ message: "First name cannot be empty" });
+      }
+      user.firstName = firstName.trim();
+    }
+
+    if (lastName !== undefined) {
+      if (typeof lastName !== "string" || !lastName.trim()) {
+        return res.status(400).json({ message: "Last name cannot be empty" });
+      }
+      user.lastName = lastName.trim();
+    }
+
+    if (phone !== undefined) {
+      if (typeof phone !== "string" || !phone.trim()) {
+        return res.status(400).json({ message: "Phone cannot be empty" });
+      }
+      user.phone = phone.trim();
+    }
+
+    if (address !== undefined) {
+      user.address = String(address).trim();
+    }
+
+    if (dob !== undefined) {
+      const date = new Date(dob);
+      if (Number.isNaN(date.getTime()) || date > new Date()) {
+        return res.status(400).json({ message: "Invalid date of birth" });
+      }
+      user.dob = date;
+    }
+
+    const changingEmail =
+      email !== undefined && String(email).trim().toLowerCase() !== user.email;
+    const changingPassword = newPassword !== undefined;
+
+    if (changingEmail || changingPassword) {
+      if (!currentPassword || !(await user.comparePassword(currentPassword))) {
+        return res
+          .status(401)
+          .json({ message: "Current password is incorrect" });
+      }
+    }
+
+    if (changingEmail) {
+      const nextEmail = String(email).trim().toLowerCase();
+      if (!/^\S+@\S+\.\S+$/.test(nextEmail)) {
+        return res.status(400).json({ message: "Invalid email address" });
+      }
+      user.email = nextEmail;
+    }
+
+    if (changingPassword) {
+      if (typeof newPassword !== "string" || newPassword.length < 8) {
+        return res
+          .status(400)
+          .json({ message: "New password must be at least 8 characters" });
+      }
+      user.password = await bcrypt.hash(newPassword, 10); // same rounds as register
+    }
+
+    await user.save();
+
+    const { password: _password, ...safeUser } = user.toObject();
+    return res.status(200).json({ message: "Account updated", user: safeUser });
+  } catch (error: any) {
+    // Unique index violation (email or phone already taken)
+    if (error?.code === 11000) {
+      const field = Object.keys(error.keyPattern ?? {})[0] ?? "field";
+      return res.status(409).json({ message: `That ${field} is already in use` });
+    }
+    console.error("Update account error:", error);
+    return res.status(500).json({ message: "Something went wrong" });
+  }
+};
+
+
+export const deleteAccount = async (req: AuthRequest, res: Response) => {
+  try {
+    const { password } = req.body;
+
+    if (!password) {
+      return res
+        .status(400)
+        .json({ message: "Password is required to delete your account" });
+    }
+
+    const user = await User.findById(req.userId);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    if (!(await user.comparePassword(password))) {
+      return res.status(401).json({ message: "Incorrect password" });
+    }
+
+    if (user.role === "restaurant") {
+      const owned = await Restaurant.countDocuments({ owner: user._id });
+      if (owned > 0) {
+        return res.status(400).json({
+          message: "Remove your restaurants before deleting your account",
+        });
+      }
+    }
+
+    await Booking.deleteMany({ customer: user._id });
+    await user.deleteOne();
+
+    return res.status(200).json({ message: "Account deleted" });
+  } catch (error) {
+    console.error("Delete account error:", error);
     return res.status(500).json({ message: "Something went wrong" });
   }
 };

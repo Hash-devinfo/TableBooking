@@ -1,11 +1,18 @@
-import { View, Text, Pressable, Image, ScrollView } from "react-native";
+import {
+  View,
+  Text,
+  Pressable,
+  Image,
+  ScrollView,
+  Alert,
+  Modal,
+} from "react-native";
 import React, { useCallback, useState } from "react";
 import NavigationBar from "./components/navigationBar";
-import { MaterialCommunityIcons } from "@expo/vector-icons";
-import { getMe } from "../api/authApi";
+import { getMe, deleteMe } from "../api/authApi";
 import { Link, router, useFocusEffect } from "expo-router";
 import * as SecureStore from "expo-secure-store";
-import { Button, TextInput } from "react-native-paper";
+import { ActivityIndicator, Button, TextInput } from "react-native-paper";
 
 type Profile = {
   firstName?: string;
@@ -17,6 +24,9 @@ type Profile = {
 
 const Profile = () => {
   const [profile, setProfile] = useState<Profile | null>(null);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [password, setPassword] = useState("");
+  const [deleting, setDeleting] = useState(false);
   const getStoredToken = async (): Promise<string | null> => {
     try {
       return await SecureStore.getItemAsync("authToken");
@@ -56,6 +66,40 @@ const Profile = () => {
       router.replace("/");
     } catch (error) {
       console.error("Failed to log out:", error);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!password) {
+      Alert.alert(
+        "Password required",
+        "Enter your password to delete your account.",
+      );
+      return;
+    }
+
+    try {
+      setDeleting(true);
+
+      const token = await SecureStore.getItemAsync("authToken");
+      if (!token) {
+        router.replace("/");
+        return;
+      }
+
+      await deleteMe(token, password);
+
+      await SecureStore.deleteItemAsync("authToken");
+      setShowDeleteModal(false);
+      router.replace("/");
+    } catch (error) {
+      Alert.alert(
+        "Could not delete account",
+        error instanceof Error ? error.message : "Something went wrong.",
+      );
+    } finally {
+      setDeleting(false);
+      setPassword("");
     }
   };
 
@@ -132,13 +176,64 @@ const Profile = () => {
             <Text className="text-xl font-bold text-white">Logout </Text>
           </Button>
         </View>
+
         <View className="mt-4 border-1 bg-red-700 rounded-full justify-center flex ">
-          <Button>
+          <Button onPress={() => setShowDeleteModal(true)}>
             <Text className="text-xl font-bold text-white">
               Delete Account{" "}
             </Text>
           </Button>
         </View>
+        <Modal
+          visible={showDeleteModal}
+          transparent
+          animationType="fade"
+          onRequestClose={() => setShowDeleteModal(false)}>
+          <View className="flex-1 items-center justify-center bg-black/50 px-6">
+            <View className="w-full rounded-2xl bg-white p-6">
+              <Text className="text-xl font-bold text-blue-600">
+                Confirm deletion
+              </Text>
+              <Text
+                className="mt-2 text-gray-600 text-base font-medium
+              ">
+                Enter your password to permanently delete your account.
+              </Text>
+
+              <TextInput
+                value={password}
+                onChangeText={setPassword}
+                placeholder="Password"
+                secureTextEntry
+                autoCapitalize="none"
+                className=" rounded-full border border-gray-300 px-4 py-3"
+              />
+
+              <View className="mt-5 flex-row gap-3">
+                <Pressable
+                  onPress={() => {
+                    setShowDeleteModal(false);
+                    setPassword("");
+                  }}
+                  disabled={deleting}
+                  className="flex-1 items-center rounded-full border border-gray-300 bg-blue-400 py-3">
+                  <Text className="font-semibold text-white">Cancel</Text>
+                </Pressable>
+
+                <Pressable
+                  onPress={handleDelete}
+                  disabled={deleting}
+                  className="flex-1 items-center rounded-full bg-red-600 py-3">
+                  {deleting ? (
+                    <ActivityIndicator color="white" />
+                  ) : (
+                    <Text className="font-semibold text-white">Delete</Text>
+                  )}
+                </Pressable>
+              </View>
+            </View>
+          </View>
+        </Modal>
       </ScrollView>
 
       <NavigationBar />

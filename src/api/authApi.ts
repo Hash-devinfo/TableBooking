@@ -1,35 +1,25 @@
 const API_URL = "http://10.0.2.2:3000/api";
-import * as SecureStore from "expo-secure-store";
 
-// Add this function alongside signupUser and loginUser
+async function request<T>(
+  path: string,
+  options: {
+    method?: "GET" | "POST" | "PATCH" | "DELETE";
+    body?: object;
+    token?: string;
+  } = {},
+): Promise<T> {
+  const { method = "GET", body, token } = options;
 
-export const getMe = async (token: string) => {
-  const response = await fetch(`${API_URL}/auth/me`, {
-    method: "GET",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
-    },
-  });
-
-  const data = await response.json();
-
-  if (!response.ok) {
-    throw new Error(data.message || "Failed to fetch user profile");
-  }
-
-  return data;
-};
-async function postAuth<T>(path: string, body: object): Promise<T> {
   const response = await fetch(`${API_URL}/auth/${path}`, {
-    method: "POST",
+    method,
     headers: {
       "Content-Type": "application/json",
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
     },
-    body: JSON.stringify(body),
+    body: body ? JSON.stringify(body) : undefined,
   });
 
-  const data = await response.json();
+  const data = await response.json().catch(() => ({}));
 
   if (!response.ok) {
     throw new Error(data.message || `${path} failed`);
@@ -46,21 +36,26 @@ export const signupUser = (userData: {
   phone: string;
   role: string;
   password: string;
-}) => postAuth("signup", userData);
+}) => request("signup", { method: "POST", body: userData });
 
-export const loginUser = (credentials: {
-  email: string;
-  password: string;
-}) => postAuth("login", credentials);
+export const loginUser = (credentials: { email: string; password: string }) =>
+  request("login", { method: "POST", body: credentials });
 
-const fetchUserProfile = async () => {
-  try {
-    const token = await SecureStore.getItemAsync("authToken");
-    if (!token) return;
+export const getMe = (token: string) =>
+  request<any>("me", { token });
 
-    const userData = await getMe(token);
-    console.log("User Profile:", userData);
-  } catch (error) {
-    console.error("Error loading profile:", error);
-  }
+export const updateMe = async (token: string, data: Record<string, unknown>) => {
+  const res = await request<{ user: any }>("me", {
+    method: "PATCH",
+    body: data,
+    token,
+  });
+  return res.user;
 };
+
+export const deleteMe = (token: string, password: string) =>
+  request<{ message: string }>("me", {
+    method: "DELETE",
+    body: { password },
+    token,
+  });

@@ -309,7 +309,6 @@ const BookingDetails = () => {
               </Text>
             </View>
           </View>
-
           <View className="relative">
             <DashedDivider />
             <View className="absolute -left-3 -top-3 h-6 w-6 rounded-full bg-white" />
