@@ -285,7 +285,7 @@ export default function Home() {
   return (
     
     <View className="flex-1 bg-white ">
-      <View className="flex-1 px-2 py-2">
+      <View className="flex-1 px-2 pt-16">
 
       
       {/* Header Profile Info */}

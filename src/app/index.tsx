@@ -75,7 +75,7 @@ export default function App() {
 
       // Initial route redirect upon successful login
       if (userRole === "admin" || userRole === "Admin") {
-        router.replace("/(admin)/dashboard");
+        router.replace("/(admin)/adminDashboard");
       } else if (userRole === "restaurant" || userRole === "Restaurant") {
         router.replace("/(restaurant)/restaurantDashboard");
       } else {

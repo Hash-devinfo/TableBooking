@@ -17,6 +17,7 @@ export interface IRestaurant extends Document {
   floorNumbers: string[];
   availableSeats: number;
   seatingTypes: string[];
+  isActive: boolean;
 }
 
 const restaurantSchema = new Schema<IRestaurant>(
@@ -37,6 +38,7 @@ const restaurantSchema = new Schema<IRestaurant>(
     availableSeats: { type: Number, default: 0, min: 0 },
     seatingTypes: { type: [String], default: [] },
     reviewCount: { type: Number, default: 0, min: 0 },
+    isActive: { type: Boolean, default: true },
   },
   { timestamps: true },
 );

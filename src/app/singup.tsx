@@ -25,7 +25,7 @@ type Errors = {
   email?: boolean;
   dob?: boolean;
   phone?: boolean;
-  password?: boolean; 
+  password?: boolean;
 };
 
 export default function SignUp() {
@@ -41,29 +41,37 @@ export default function SignUp() {
 
   const [loading, setLoading] = useState(false);
 
+  const formatDobForApi = (date: Date) =>
+    `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(
+      date.getDate(),
+    ).padStart(2, "0")}`;
+
   const formattedDob = dob
     ? `${String(dob.getDate()).padStart(2, "0")}/${String(
         dob.getMonth() + 1,
       ).padStart(2, "0")}/${dob.getFullYear()}`
     : "";
 
-  const onDateChange = (event: any, selectedDate: Date) => {
-    setShowDatePicker(Platform.OS === "ios");
-    setDob(selectedDate);
-  };
+  const onDateChange = (event: any, selectedDate?: Date) => {
+    const currentDate = selectedDate || dob;
 
-  const onDatePickerDismiss = () => {
-    setShowDatePicker(false);
+    if (Platform.OS === "android") {
+      setShowDatePicker(false);
+    }
+
+    if (event.type === "set" && currentDate) {
+      setDob(currentDate);
+    }
   };
 
   const handleSignup = async () => {
     const newErrors: Errors = {};
 
-    if (!firstName) newErrors.firstName = true;
-    if (!lastName) newErrors.lastName = true;
-    if (!email) newErrors.email = true;
+    if (!firstName.trim()) newErrors.firstName = true;
+    if (!lastName.trim()) newErrors.lastName = true;
+    if (!email.trim()) newErrors.email = true;
     if (!dob) newErrors.dob = true;
-    if (!phone) newErrors.phone = true;
+    if (!phone.trim()) newErrors.phone = true;
     if (!password) newErrors.password = true;
 
     setErrors(newErrors);
@@ -80,11 +88,11 @@ export default function SignUp() {
       setLoading(true);
 
       await signupUser({
-        firstName,
-        lastName,
-        email,
-        dob: dob!.toISOString(),
-        phone,
+        firstName: firstName.trim(),
+        lastName: lastName.trim(),
+        email: email.trim(),
+        dob: formatDobForApi(dob!),
+        phone: phone.trim(),
         role,
         password,
       });
@@ -96,7 +104,7 @@ export default function SignUp() {
             router.replace({
               pathname: "/",
               params: {
-                email,
+                email: email.trim(),
                 password,
               },
             }),
@@ -219,8 +227,14 @@ export default function SignUp() {
                 mode="date"
                 display={Platform.OS === "ios" ? "spinner" : "default"}
                 maximumDate={new Date()}
-                onValueChange={onDateChange}
-                onDismiss={onDatePickerDismiss}
+                onChange={(onDateCall) => {
+                  onDateChange(
+                    onDateCall,
+                    (onDateCall as any).nativeEvent?.timestamp
+                      ? new Date((onDateCall as any).nativeEvent.timestamp)
+                      : undefined,
+                  );
+                }}
               />
             )}
 

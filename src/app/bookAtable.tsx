@@ -133,7 +133,7 @@ export default function BookATable() {
   const initial = restaurant?.name?.trim().charAt(0).toUpperCase() || "?";
 
   return (
-    <View className="flex-1 bg-white">
+    <View className="flex-1 bg-white pt-16">
       <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
         <View className="w-full h-72 justify-between bg-blue-600">
           {showCover ? (

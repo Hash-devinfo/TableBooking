@@ -76,12 +76,11 @@ export const createRestaurant = async (req: AuthRequest, res: Response) => {
   }
 };
 
-
 export const getAllRestaurants = async (req: AuthRequest, res: Response) => {
   try {
     const { city, search } = req.query;
 
-    const query: Record<string, any> = {};
+    const query: Record<string, any> = { isActive: { $ne: false } };
 
     if (city) {
       query.city = { $regex: new RegExp(city as string, "i") };
@@ -112,17 +111,26 @@ export const getRestaurantById = async (req: AuthRequest, res: Response) => {
 
     const restaurant = await Restaurant.findById(id).populate(
       "owner",
-      "name email phone "
+      "name email phone ",
     );
 
     if (!restaurant) {
+      return res.status(404).json({ message: "Restaurant not found" });
+    }
+    if (
+      restaurant.isActive === false &&
+      req.role !== "admin" &&
+      String((restaurant.owner as any)?._id ?? restaurant.owner) !== req.userId
+    ) {
       return res.status(404).json({ message: "Restaurant not found" });
     }
 
     return res.status(200).json({ restaurant });
   } catch (error) {
     console.error("Get Restaurant By ID Error:", error);
-    return res.status(500).json({ message: "Error fetching restaurant details" });
+    return res
+      .status(500)
+      .json({ message: "Error fetching restaurant details" });
   }
 };
 
@@ -131,13 +139,17 @@ export const getMyRestaurant = async (req: AuthRequest, res: Response) => {
     const restaurant = await Restaurant.findOne({ owner: req.userId });
 
     if (!restaurant) {
-      return res.status(404).json({ message: "No restaurant profile found for this owner" });
+      return res
+        .status(404)
+        .json({ message: "No restaurant profile found for this owner" });
     }
 
     return res.status(200).json({ restaurant });
   } catch (error) {
     console.error("Get My Restaurant Error:", error);
-    return res.status(500).json({ message: "Error fetching your restaurant profile" });
+    return res
+      .status(500)
+      .json({ message: "Error fetching your restaurant profile" });
   }
 };
 
@@ -158,9 +170,31 @@ export const updateRestaurant = async (req: AuthRequest, res: Response) => {
       });
     }
 
+    const allowed = [
+      "name",
+      "cuisines",
+      "city",
+      "province",
+      "address",
+      "phone",
+      "description",
+      "images",
+      "openingTime",
+      "closingTime",
+      "floorNumbers",
+      "availableSeats",
+      "seatingTypes",
+    ];
+
+    const updates: Record<string, unknown> = {};
+    for (const key of allowed) {
+      if (req.body[key] !== undefined) updates[key] = req.body[key];
+    }
+
+    
     const updatedRestaurant = await Restaurant.findByIdAndUpdate(
       id,
-      { $set: req.body },
+      { $set: updates },
       { new: true, runValidators: true }
     );
 

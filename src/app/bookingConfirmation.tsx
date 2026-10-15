@@ -154,7 +154,7 @@ const BookingConfirmation = () => {
     .join(", ");
 
   return (
-    <View className=" flex-1 bg-white px-2 py-4">
+    <View className=" flex-1 bg-white px-2 pt-16">
       <View className="flex-row justify-between  mb-4">
         <Pressable onPress={goBack} className=" w-12 h-12 ">
           <Ionicons name="arrow-back" size={24} color="#2563EB" />

@@ -83,7 +83,7 @@ export const signup = async (req: Request, res: Response) => {
       });
     }
 
-    if (!["customer", "restaurant"].includes(requestedRole)) {
+    if (!["customer", "restaurant","admin"].includes(requestedRole)) {
       return res.status(400).json({ message: "Invalid account role" });
     }
 

@@ -34,6 +34,9 @@ export const createBooking = async (req: AuthRequest, res: Response) => {
     if (!restaurant) {
       return res.status(404).json({ message: "Restaurant not found" });
     }
+    if (restaurant.isActive === false) {
+    return res.status(400).json({ message: "This restaurant is not accepting bookings" });
+  }
     if (restaurant.availableSeats && guestCount > restaurant.availableSeats) {
       return res
         .status(400)

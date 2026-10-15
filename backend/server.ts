@@ -23,7 +23,8 @@ app.use("/api/auth", authRoutes);
 app.use("/api/bookings", bookingRoutes);
 app.use("/api/restaurants", restaurantRoutes);
 app.use("/api/favorites", favoriteRoutes);
-
+import adminRoutes from "./routes/adminRoutes.js";
+app.use("/api/admin", adminRoutes);
 const port = process.env.PORT || 3000;
 
 app.get("/", (req: Request, res: Response) => {

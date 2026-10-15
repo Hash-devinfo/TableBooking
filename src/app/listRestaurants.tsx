@@ -247,7 +247,7 @@ export default function ListRestaurants() {
     <View className="flex-1 bg-white">
 
     
-    <View className="flex-1  px-2 py-4">
+    <View className="flex-1  px-2 pt-16">
       <View className="flex-row justify-between  mb-4">
         <Link href={"/home"} asChild>
           <Pressable className=" w-12 h-12 ">

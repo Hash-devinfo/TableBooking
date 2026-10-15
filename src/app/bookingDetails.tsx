@@ -12,6 +12,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { router, useFocusEffect, useLocalSearchParams } from "expo-router";
 import { cancelBooking, getMyBookings, type Booking } from "../api/bookingApi";
 import { getRestaurantById, type Restaurant } from "../api/restaurantApi";
+import { getBookingCode } from "../utils/booking";
 
 type IconName = keyof typeof Ionicons.glyphMap;
 
@@ -255,17 +256,14 @@ const BookingDetails = () => {
     [restaurant?.address, restaurant?.city].filter(Boolean).join(", ") ||
     "Address unavailable";
 
-  const bookingCode = `${restaurantName
-    .replace(/[^a-z0-9]/gi, "")
-    .slice(0, 3)
-    .toUpperCase()}#${booking._id.slice(-6).toUpperCase()}`;
+  const bookingCode = getBookingCode(booking, restaurantName);
   return (
     <ScrollView
       className="flex-1 bg-white"
       refreshControl={
         <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
       }>
-      <View className="items-center px-6 pb-10 pt-16">
+      <View className="items-center px-6 pb-10 pt-20">
         <View className="h-20 w-20 items-center justify-center rounded-full border border-green-100 bg-green-50">
           <Ionicons name={config.icon} size={38} color="blue" />
         </View>

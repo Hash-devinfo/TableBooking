@@ -236,7 +236,7 @@ const TableRequirements = () => {
     .join(", ");
 
   return (
-    <View className="flex-1 bg-white px-2 py-4">
+    <View className="flex-1 bg-white px-2 pt-16">
       <ScrollView
         className="flex-1"
         showsVerticalScrollIndicator={false}
