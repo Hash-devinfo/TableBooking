@@ -63,6 +63,8 @@ const Profile = () => {
   const handleLogout = async () => {
     try {
       await SecureStore.deleteItemAsync("authToken");
+      await SecureStore.deleteItemAsync("userRole");
+      await SecureStore.deleteItemAsync("rememberMePreference");
       router.replace("/");
     } catch (error) {
       console.error("Failed to log out:", error);

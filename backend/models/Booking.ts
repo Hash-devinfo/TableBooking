@@ -11,7 +11,7 @@ export interface IBooking extends Document {
   request?: string;
   floor: string;
 
-  status: "pending" | "confirmed" | "cancelled";
+  status: "pending" | "confirmed" | "rejected" | "cancelled";
 }
 
 const bookingSchema = new Schema<IBooking>(

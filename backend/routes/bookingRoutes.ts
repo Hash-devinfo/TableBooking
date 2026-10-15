@@ -3,6 +3,7 @@ import { Router } from "express";
 import {
   cancelBooking,
   createBooking,
+  deleteBookingByOwner,
   getMyBookings,
   getRestaurantBookings,
   updateBookingStatus,
@@ -19,7 +20,7 @@ router.get(
   authorize("restaurant"),
   getRestaurantBookings,
 );
-router.patch("/:id/status", protect, updateBookingStatus);
+router.patch("/:id/status", protect, authorize("restaurant"), updateBookingStatus);
 router.patch("/:id/cancel", protect, cancelBooking);
-
+router.delete("/:id", protect, authorize("restaurant"), deleteBookingByOwner);
 export default router;

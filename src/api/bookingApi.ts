@@ -2,9 +2,27 @@ import * as SecureStore from "expo-secure-store";
 
 const API_URL = "http://10.0.2.2:3000/api";
 
+type PopulatedRestaurant = {
+  _id: string;
+  name?: string;
+  city?: string;
+  province?: string;
+  images?: string[];
+  address?: string;
+  phone?: string;
+};
+
+type PopulatedCustomer = {
+  _id: string;
+  firstName?: string;
+  lastName?: string;
+  
+};
+
 export type Booking = {
   _id: string;
-  restaurantId: string;
+  restaurant?: string | PopulatedRestaurant;
+  customer?: string | PopulatedCustomer;
   date: string;
   time: string;
   guests: number;
@@ -29,7 +47,7 @@ const getAuthHeaders = async () => {
 };
 
 const parseResponse = async (response: Response, fallbackMessage: string) => {
-  const data = await response.json();
+  const data = await response.json().catch(() => ({}));
 
   if (!response.ok) {
     throw new Error(data.message || fallbackMessage);
@@ -37,6 +55,8 @@ const parseResponse = async (response: Response, fallbackMessage: string) => {
 
   return data;
 };
+
+/* ------------------------------ Customer ------------------------------ */
 
 export const createBooking = async (bookingData: {
   restaurantId: string;
@@ -76,4 +96,47 @@ export const cancelBooking = async (bookingId: string) => {
   });
 
   return parseResponse(response, "Could not cancel booking");
+};
+
+// Bookings made at the logged-in owner's restaurants
+export const getRestaurantBookings = async (
+  status?: Booking["status"],
+): Promise<Booking[]> => {
+  const headers = await getAuthHeaders();
+  const query = status ? `?status=${status}` : "";
+
+  const response = await fetch(`${API_URL}/bookings/restaurant${query}`, {
+    headers,
+  });
+
+  const data = await parseResponse(response, "Could not load bookings");
+  return data.bookings;
+};
+
+// Owner confirms or rejects a pending booking
+export const updateBookingStatus = async (
+  bookingId: string,
+  status: "confirmed" | "rejected",
+): Promise<Booking> => {
+  const headers = await getAuthHeaders();
+
+  const response = await fetch(`${API_URL}/bookings/${bookingId}/status`, {
+    method: "PATCH",
+    headers,
+    body: JSON.stringify({ status }),
+  });
+
+  const data = await parseResponse(response, "Could not update booking");
+  return data.booking;
+};
+
+export const deleteBooking = async (bookingId: string) => {
+  const headers = await getAuthHeaders();
+
+  const response = await fetch(`${API_URL}/bookings/${bookingId}`, {
+    method: "DELETE",
+    headers,
+  });
+
+  return parseResponse(response, "Could not delete booking");
 };

@@ -271,7 +271,7 @@ export const updateAccount = async (req: AuthRequest, res: Response) => {
           .status(400)
           .json({ message: "New password must be at least 8 characters" });
       }
-      user.password = await bcrypt.hash(newPassword, 10); // same rounds as register
+      user.password = await bcrypt.hash(newPassword, 10); 
     }
 
     await user.save();

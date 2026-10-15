@@ -139,7 +139,6 @@ export const getRestaurantBookings = async (
   }
 };
 
-// Owner confirms or rejects a pending booking
 export const updateBookingStatus = async (req: AuthRequest, res: Response) => {
   try {
     const { id } = req.params;
@@ -168,6 +167,12 @@ export const updateBookingStatus = async (req: AuthRequest, res: Response) => {
       return res.status(403).json({ message: "Not allowed" });
     }
 
+    if (booking.status === "cancelled") {
+      return res
+        .status(400)
+        .json({ message: "Cancelled bookings can't be changed" });
+    }
+
     if (booking.status !== "pending") {
       return res
         .status(400)
@@ -180,6 +185,43 @@ export const updateBookingStatus = async (req: AuthRequest, res: Response) => {
     return res.status(200).json({ message: `Booking ${status}`, booking });
   } catch (error) {
     console.error("Update booking status error:", error);
+    return res.status(500).json({ message: "Something went wrong" });
+  }
+};
+
+// Owner deletes a booking made at  restaurants
+export const deleteBookingByOwner = async (req: AuthRequest, res: Response) => {
+  try {
+    const { id } = req.params;
+
+    if (!mongoose.isValidObjectId(id)) {
+      return res.status(400).json({ message: "Invalid booking id" });
+    }
+
+    const booking = await Booking.findById(id);
+    if (!booking) {
+      return res.status(404).json({ message: "Booking not found" });
+    }
+
+    // Only the restaurant's owner may delete it
+    const restaurant = await Restaurant.findOne({
+      _id: booking.restaurant,
+      owner: req.userId,
+    });
+    if (!restaurant) {
+      return res.status(403).json({ message: "Not allowed" });
+    }
+    if (booking.status !== "rejected" && booking.status !== "cancelled") {
+      return res.status(400).json({
+        message: "Only rejected or cancelled bookings can be deleted",
+      });
+    }
+
+    await booking.deleteOne();
+
+    return res.status(200).json({ message: "Booking deleted" });
+  } catch (error) {
+    console.error("Delete booking error:", error);
     return res.status(500).json({ message: "Something went wrong" });
   }
 };

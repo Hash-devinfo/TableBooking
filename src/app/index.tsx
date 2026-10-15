@@ -19,27 +19,36 @@ export default function App() {
   const [password, setPassword] = useState(
     typeof signupPassword === "string" ? signupPassword : "",
   );
-  const getStoredToken = async (): Promise<string | null> => {
-    try {
-      return await SecureStore.getItemAsync("authToken");
-    } catch (error) {
-      console.error("Error reading auth token:", error);
-      return null;
-    }
-  };
   useEffect(() => {
     const checkRememberedLogin = async () => {
       try {
         const token = await SecureStore.getItemAsync("authToken");
+        const rememberPreference = await SecureStore.getItemAsync(
+          "rememberMePreference",
+        );
+        const userRole = await SecureStore.getItemAsync("userRole");
 
-        if (token) {
-          router.replace("/home");
+        if (token && rememberPreference === "true") {
+          if (userRole === "admin" || userRole === "Admin") {
+            router.replace("/(admin)/adminDashboard");
+          } else if (userRole === "restaurant" || userRole === "Restaurant") {
+            router.replace("/(restaurant)/restaurantDashboard");
+          } else {
+            router.replace("/home");
+          }
+        } else {
+          await SecureStore.deleteItemAsync("authToken");
+          await SecureStore.deleteItemAsync("rememberMePreference");
+          await SecureStore.deleteItemAsync("userRole");
         }
-      } catch {}
+      } catch (err) {
+        console.error("Error checking auto-login status:", err);
+      }
     };
 
     checkRememberedLogin();
   }, []);
+
   const handleLogin = async () => {
     setError("");
 
@@ -49,26 +58,35 @@ export default function App() {
       const data = (await loginUser({
         email: email.trim(),
         password,
-      })) as { token: string };
+      })) as { token: string; user?: { role?: string }; role?: string };
 
       if (!data?.token) {
         throw new Error("Login response was invalid");
       }
 
-      if (rememberMe) {
-        await SecureStore.setItemAsync("authToken", data.token);
-      } else {
-        await SecureStore.deleteItemAsync("authToken");
-      }
+      const userRole = data.role || data.user?.role || "customer";
 
-      router.replace("/home");
+      await SecureStore.setItemAsync("authToken", data.token);
+      await SecureStore.setItemAsync("userRole", userRole);
+      await SecureStore.setItemAsync(
+        "rememberMePreference",
+        rememberMe ? "true" : "false",
+      );
+
+      // Initial route redirect upon successful login
+      if (userRole === "admin" || userRole === "Admin") {
+        router.replace("/(admin)/dashboard");
+      } else if (userRole === "restaurant" || userRole === "Restaurant") {
+        router.replace("/(restaurant)/restaurantDashboard");
+      } else {
+        router.replace("/home");
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Login failed");
     } finally {
       setLoading(false);
     }
   };
-
   return (
     <LinearGradient
       colors={["#2F6FED", "#1FD1D1"]}
