@@ -103,7 +103,7 @@ const buildSearchText = (b: Booking): string => {
   if (!Number.isNaN(d.getTime())) {
     const m = d.getMonth() + 1;
     parts.push(
-      formatDate(b.date), // "Oct 15", what the row shows
+      formatDate(b.date), 
       d.toLocaleDateString("en-US", {
         weekday: "long",
         month: "long",

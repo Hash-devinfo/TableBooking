@@ -8,6 +8,7 @@ import * as SecureStore from "expo-secure-store";
 
 export default function App() {
   const [rememberMe, setRememberMe] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const { email: signupEmail, password: signupPassword } =
     useLocalSearchParams();
   const [loading, setLoading] = useState(false);
@@ -93,7 +94,7 @@ export default function App() {
       start={{ x: 0, y: 0 }}
       end={{ x: 0, y: 1 }}
       style={{ flex: 1 }}>
-      <View className="flex px-8 pt-12">
+      <View className="flex px-8 pt-16">
         <View className="flex-row justify-center items-center mb-10">
           <Image
             source={require("../../assets/images/logo.png")}
@@ -131,14 +132,29 @@ export default function App() {
           <Text className="text-sm font-semibold mb-1 text-gray-400">
             Password
           </Text>
-          <TextInput
-            value={password}
-            onChangeText={setPassword}
-            placeholder="********"
-            placeholderTextColor="#9ca3af"
-            secureTextEntry
-            className="border border-gray-500 rounded-lg px-4 py-3 text-black"
-          />
+          <View className="flex-row items-center border border-gray-500 rounded-lg px-4 mb-4">
+            <TextInput
+              value={password}
+              onChangeText={setPassword}
+              placeholder="********"
+              placeholderTextColor="#9ca3af"
+              secureTextEntry={!showPassword}
+              className="flex-1 py-3 text-black"
+            />
+            <Pressable
+              onPress={() => setShowPassword(!showPassword)}
+              hitSlop={8}
+              accessibilityRole="button"
+              accessibilityLabel={
+                showPassword ? "Hide password" : "Show password"
+              }>
+              <Ionicons
+                name={showPassword ? "eye-off" : "eye"}
+                size={20}
+                color="#9ca3af"
+              />
+            </Pressable>
+          </View>
           {error ? <Text className=" text-red-600">{error}</Text> : null}
           <View className="flex-row justify-between ">
             <Pressable

@@ -4,6 +4,7 @@ import mongoose from "mongoose";
 import Booking from "../models/Booking.js";
 import Restaurant from "../models/Restaurant.js";
 import { AuthRequest } from "../middleware/authMiddleware.js";
+import { notifyAdminsOfNewBooking } from "../utils/bookingEmails.js";
 
 export const createBooking = async (req: AuthRequest, res: Response) => {
   try {
@@ -35,8 +36,10 @@ export const createBooking = async (req: AuthRequest, res: Response) => {
       return res.status(404).json({ message: "Restaurant not found" });
     }
     if (restaurant.isActive === false) {
-    return res.status(400).json({ message: "This restaurant is not accepting bookings" });
-  }
+      return res
+        .status(400)
+        .json({ message: "This restaurant is not accepting bookings" });
+    }
     if (restaurant.availableSeats && guestCount > restaurant.availableSeats) {
       return res
         .status(400)
@@ -57,6 +60,12 @@ export const createBooking = async (req: AuthRequest, res: Response) => {
       "restaurant",
       "name city province images address phone",
     );
+
+    void notifyAdminsOfNewBooking({
+      booking,
+      restaurantName: restaurant.name,
+      customerId: req.userId,
+    });
 
     return res
       .status(201)
