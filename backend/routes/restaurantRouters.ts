@@ -16,10 +16,15 @@ router.get("/", getAllRestaurants);
 router.get("/:id", getRestaurantById);
 
 // Owner-specific protected route (Must come before /:id in Express execution)
-router.get("/me/profile", protect, authorize("restaurant"), getMyRestaurant);
+router.get(
+  "/me/profile",
+  protect,
+  authorize("restaurant", "admin"),
+  getMyRestaurant,
+);
 
 // Admin / Owner protected routes
-router.post("/", protect, authorize("restaurant"), createRestaurant);
+router.post("/", protect, authorize("restaurant","admin"), createRestaurant);
 router.put("/:id", protect, authorize("restaurant", "admin"), updateRestaurant);
 router.delete(
   "/:id",

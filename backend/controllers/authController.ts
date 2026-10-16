@@ -83,7 +83,7 @@ export const signup = async (req: Request, res: Response) => {
       });
     }
 
-    if (!["customer", "restaurant","admin"].includes(requestedRole)) {
+    if (!["customer", "restaurant", "admin"].includes(requestedRole)) {
       return res.status(400).json({ message: "Invalid account role" });
     }
 
@@ -162,11 +162,12 @@ export const login = async (req: Request, res: Response) => {
 
     const token = createToken(user._id.toString(), user.role);
     const { password: _password, ...safeUser } = user.toObject();
-
+    const restaurantExists = await Restaurant.findOne({ owner: user._id });
     return res.status(200).json({
       message: "Login successful",
       token,
       user: safeUser,
+      hasRestaurant: !!restaurantExists
     });
   } catch (error) {
     console.error("Login error:", error);
@@ -271,7 +272,7 @@ export const updateAccount = async (req: AuthRequest, res: Response) => {
           .status(400)
           .json({ message: "New password must be at least 8 characters" });
       }
-      user.password = await bcrypt.hash(newPassword, 10); 
+      user.password = await bcrypt.hash(newPassword, 10);
     }
 
     await user.save();
@@ -282,13 +283,14 @@ export const updateAccount = async (req: AuthRequest, res: Response) => {
     // Unique index violation (email or phone already taken)
     if (error?.code === 11000) {
       const field = Object.keys(error.keyPattern ?? {})[0] ?? "field";
-      return res.status(409).json({ message: `That ${field} is already in use` });
+      return res
+        .status(409)
+        .json({ message: `That ${field} is already in use` });
     }
     console.error("Update account error:", error);
     return res.status(500).json({ message: "Something went wrong" });
   }
 };
-
 
 export const deleteAccount = async (req: AuthRequest, res: Response) => {
   try {

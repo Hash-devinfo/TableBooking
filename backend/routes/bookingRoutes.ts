@@ -17,10 +17,10 @@ router.get("/", protect, getMyBookings);
 router.get(
   "/restaurant",
   protect,
-  authorize("restaurant"),
+  authorize("restaurant","admin"),
   getRestaurantBookings,
 );
-router.patch("/:id/status", protect, authorize("restaurant"), updateBookingStatus);
+router.patch("/:id/status", protect, authorize("restaurant","admin"), updateBookingStatus);
 router.patch("/:id/cancel", protect, cancelBooking);
-router.delete("/:id", protect, authorize("restaurant"), deleteBookingByOwner);
+router.delete("/:id", protect, authorize("restaurant","admin"), deleteBookingByOwner);
 export default router;

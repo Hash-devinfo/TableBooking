@@ -38,7 +38,7 @@ export const signupUser = (userData: {
   password: string;
 }) => request("signup", { method: "POST", body: userData });
 
-export const loginUser = (credentials: { email: string; password: string }) =>
+export const loginUser = (credentials: { email: string; password: string, }) =>
   request("login", { method: "POST", body: credentials });
 
 export const getMe = (token: string) =>

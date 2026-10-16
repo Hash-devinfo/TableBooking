@@ -9,8 +9,8 @@ import {
   Text,
   View,
 } from "react-native";
-import { useFocusEffect } from "expo-router";
-import { Ionicons } from "@expo/vector-icons";
+import { router, useFocusEffect } from "expo-router";
+import * as SecureStore from "expo-secure-store";
 import {
   deleteBooking,
   getRestaurantBookings,
@@ -18,6 +18,7 @@ import {
   type Booking,
 } from "../../api/bookingApi";
 import { getBookingCode } from "../../utils/booking";
+import { Ionicons } from "@expo/vector-icons";
 
 const STATUS_STYLES: Record<string, { label: string; className: string }> = {
   pending: { label: "Pending", className: "bg-yellow-100 text-yellow-700" },
@@ -124,6 +125,10 @@ const RestaurantDashboard = () => {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [busyId, setBusyId] = useState<string | null>(null);
+const goBack = () => {
+  if (router.canGoBack()) router.back();
+  
+};
 
   const sortedBookings = useMemo(
     () =>
@@ -248,9 +253,19 @@ const RestaurantDashboard = () => {
 
   return (
     <View className="flex-1 pt-16 bg-white p-4">
-      <Text className="mb-6 text-center text-2xl font-bold text-blue-900">
-        Customer Bookings
-      </Text>
+       <View className="flex-row items-center">
+          <Pressable
+            onPress={goBack}
+            hitSlop={8}
+            accessibilityRole="button"
+            accessibilityLabel="Go back"
+            className="mr-3 h-10 w-10 items-center justify-center rounded-full bg-blue-50">
+            <Ionicons name="arrow-back" size={22} color="#2563EB" />
+          </Pressable>
+          <Text className="flex-1 text-2xl font-bold text-blue-900">
+            Create Your Restaurant
+          </Text>
+        </View>
       <View className="my-4">
         <Searchbar
           value={query}

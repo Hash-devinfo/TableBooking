@@ -1,11 +1,43 @@
 import axios from "axios";
+import * as SecureStore from "expo-secure-store";
 
 const API_URL = "http://10.0.2.2:3000/api";
 
 const API = axios.create({
   baseURL: API_URL,
 });
+export type NewRestaurant = {
+  name: string;
+  cuisines: string;
+  city: string;
+  province?: string;
+  address: string;
+  phone: string;
+  description?: string;
+  images: string[];
+  openingTime: string;
+  closingTime: string;
+  floorNumbers: string[];
+  availableSeats: number;
+  seatingTypes: string[];
+};
+export const createRestaurant = async (
+  data: NewRestaurant,
+): Promise<Restaurant> => {
+  const token = await SecureStore.getItemAsync("authToken");
+  if (!token) throw new Error("You must be logged in");
 
+  try {
+    const response = await API.post("/restaurants", data, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    return response.data.restaurant;
+  } catch (error: any) {
+    throw new Error(
+      error?.response?.data?.message || "Could not create restaurant",
+    );
+  }
+};
 export interface Restaurant {
   _id: string;
   name: string;
@@ -52,3 +84,4 @@ export const resolveImageUrl = (url?: string): string | undefined => {
 
   return url.replace(/^http:\/\//i, "https://");
 };
+

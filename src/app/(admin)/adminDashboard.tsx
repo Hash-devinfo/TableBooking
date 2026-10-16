@@ -349,6 +349,13 @@ const AdminDashboard = () => {
           tint="#16A34A"
           onPress={() => router.push("/(admin)/allBookings")}
         />
+        <StatCard
+          label="My Restaurant"
+          value={1}
+          icon="restaurant"
+          tint="#D97706"
+          onPress={() => router.push("/(restaurant)/restaurantDashboard")}
+        />
       </View>
 
       <View className="mb-3 flex-row rounded-xl bg-gray-200 p-1">

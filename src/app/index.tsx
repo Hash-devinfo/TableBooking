@@ -33,7 +33,25 @@ export default function App() {
           if (userRole === "admin" || userRole === "Admin") {
             router.replace("/(admin)/adminDashboard");
           } else if (userRole === "restaurant" || userRole === "Restaurant") {
-            router.replace("/(restaurant)/restaurantDashboard");
+            const response = await fetch(
+              "http://10.0.2.2:3000/api/restaurants/me/profile",
+              {
+                headers: {
+                  Authorization: `Bearer ${token}`,
+                },
+              },
+            );
+
+            if (response.ok) {
+              router.replace("/(restaurant)/restaurantDashboard");
+            } else if (response.status === 404) {
+              router.replace("/(restaurant)/createRestaurant");
+            } else {
+              const errorData = await response.json().catch(() => ({}));
+              throw new Error(
+                errorData.message || "Could not check restaurant profile",
+              );
+            }
           } else {
             router.replace("/home");
           }
@@ -78,7 +96,33 @@ export default function App() {
       if (userRole === "admin" || userRole === "Admin") {
         router.replace("/(admin)/adminDashboard");
       } else if (userRole === "restaurant" || userRole === "Restaurant") {
-        router.replace("/(restaurant)/restaurantDashboard");
+        try {
+          const response = await fetch(
+            "http://10.0.2.2:3000/api/restaurants/me/profile",
+            {
+              headers: {
+                Authorization: `Bearer ${data.token}`,
+              },
+            },
+          );
+
+          if (response.ok) {
+            router.replace("/(restaurant)/restaurantDashboard");
+          } else if (response.status === 404) {
+            router.replace("/(restaurant)/createRestaurant");
+          } else {
+            const errorData = await response.json().catch(() => ({}));
+            throw new Error(
+              errorData.message || "Could not check restaurant profile",
+            );
+          }
+        } catch (error) {
+          setError(
+            error instanceof Error
+              ? error.message
+              : "Could not check restaurant profile",
+          );
+        }
       } else {
         router.replace("/home");
       }
