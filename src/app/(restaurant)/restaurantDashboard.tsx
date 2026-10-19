@@ -1,5 +1,5 @@
 import React, { useCallback, useState, useMemo } from "react";
-import { ActivityIndicator, Searchbar, TextInput } from "react-native-paper";
+import { ActivityIndicator, Searchbar } from "react-native-paper";
 import {
   Alert,
   FlatList,

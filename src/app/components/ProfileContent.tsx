@@ -6,12 +6,15 @@ import {
   ScrollView,
   Alert,
   Modal,
+  KeyboardAvoidingView,
+  Platform,
 } from "react-native";
 import React, { useCallback, useState } from "react";
-import { getMe, deleteMe } from "../../api/authApi";
+import { getMe, deleteMe, updateMe } from "../../api/authApi";
 import { router, useFocusEffect } from "expo-router";
 import * as SecureStore from "expo-secure-store";
 import { ActivityIndicator, Button, TextInput } from "react-native-paper";
+import { Ionicons } from "@expo/vector-icons";
 
 type Profile = {
   firstName?: string;
@@ -34,8 +37,86 @@ const clearSession = async () => {
 const ProfileContent = ({ showFoodInterest = true }: Props) => {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [showUpdateModal, setShowUpdateModal] = useState(false);
   const [password, setPassword] = useState("");
   const [deleting, setDeleting] = useState(false);
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [phone, setPhone] = useState("");
+  const [email, setEmail] = useState("");
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [saving, setSaving] = useState(false);
+  const [address, setAddress] = useState("");
+
+  const openUpdateModal = () => {
+    setFirstName(profile?.firstName ?? "");
+    setLastName(profile?.lastName ?? "");
+    setPhone(profile?.phone ?? "");
+    setEmail(profile?.email ?? "");
+    setAddress(profile?.address ?? "");
+    setCurrentPassword("");
+    setNewPassword("");
+    setShowUpdateModal(true);
+  };
+
+  const closeUpdateModal = () => {
+    setShowUpdateModal(false);
+    setCurrentPassword("");
+    setNewPassword("");
+  };
+
+  const handleUpdate = async () => {
+    const emailChanged =
+      email.trim().toLowerCase() !== (profile?.email ?? "").toLowerCase();
+    const passwordChanging = newPassword.length > 0;
+
+    if ((emailChanged || passwordChanging) && !currentPassword) {
+      Alert.alert(
+        "Current password required",
+        "Enter your current password to change your email or password.",
+      );
+      return;
+    }
+    if (passwordChanging && newPassword.length < 8) {
+      Alert.alert(
+        "Password too short",
+        "Your new password must be at least 8 characters.",
+      );
+      return;
+    }
+
+    try {
+      setSaving(true);
+
+      const token = await SecureStore.getItemAsync("authToken");
+      if (!token) {
+        router.replace("/");
+        return;
+      }
+
+      await updateMe(token, {
+        firstName: firstName.trim(),
+        lastName: lastName.trim(),
+        phone: phone.trim(),
+        address: address.trim(),
+        email: email.trim(),
+        ...(emailChanged || passwordChanging ? { currentPassword } : {}),
+        ...(passwordChanging ? { newPassword } : {}),
+      });
+
+      await loadProfile(); // same data shape as the first load
+      closeUpdateModal();
+      Alert.alert("Profile updated", "Your information has been saved.");
+    } catch (error) {
+      Alert.alert(
+        "Could not update profile",
+        error instanceof Error ? error.message : "Something went wrong.",
+      );
+    } finally {
+      setSaving(false);
+    }
+  };
 
   const getStoredToken = async (): Promise<string | null> => {
     try {
@@ -181,10 +262,135 @@ const ProfileContent = ({ showFoodInterest = true }: Props) => {
         )}
 
         <View className="mt-4 border-1 bg-orange-500 rounded-full justify-center flex ">
-          <Button>
+          <Button onPress={openUpdateModal}>
             <Text className="text-xl font-bold text-white">Edit profile </Text>
           </Button>
         </View>
+        <Modal
+          visible={showUpdateModal}
+          transparent
+          animationType="fade"
+          onRequestClose={closeUpdateModal}>
+          <KeyboardAvoidingView
+            behavior={Platform.OS === "ios" ? "padding" : "height"}
+            className="flex-1 bg-black/60 justify-center">
+            <ScrollView
+              contentContainerStyle={{
+                flexGrow: 1,
+                justifyContent: "center",
+                padding: 20,
+              }}
+              keyboardShouldPersistTaps="handled"
+              showsVerticalScrollIndicator={false}>
+              <View
+                className="rounded-3xl bg-white p-6 shadow-2xl"
+                style={{ elevation: 6 }}>
+                {/* Header with Title & Close Icon */}
+                <View className="mb-5 flex-row items-center justify-between border-b border-gray-100 pb-3">
+                  <View>
+                    <Text className="text-xl font-extrabold text-blue-900">
+                      Edit profile
+                    </Text>
+                    <Text className="text-xs text-gray-400 mt-0.5">
+                      Keep your account details up to date
+                    </Text>
+                  </View>
+                  <Pressable
+                    onPress={closeUpdateModal}
+                    disabled={saving}
+                    hitSlop={8}
+                    className="h-8 w-8 items-center justify-center rounded-full bg-gray-100 active:bg-gray-200">
+                    <Ionicons name="close" size={18} color="#4B5563" />
+                  </Pressable>
+                </View>
+
+                {/* Inputs */}
+                <TextInput
+                  label="First name"
+                  value={firstName}
+                  onChangeText={setFirstName}
+                  style={{ marginBottom: 12 }}
+                  
+                />
+                <TextInput
+                  label="Last name"
+                  value={lastName}
+                  onChangeText={setLastName}
+                  style={{ marginBottom: 12 }}
+                />
+                <TextInput
+                  label="Phone"
+                  value={phone}
+                  onChangeText={setPhone}
+                  keyboardType="phone-pad"
+                  style={{ marginBottom: 12 }}
+                />
+                <TextInput
+                  label="Address"
+                  value={address}
+                  onChangeText={setAddress}
+                  multiline
+                  style={{ marginBottom: 12 }}
+                />
+                <TextInput
+                  label="Email"
+                  value={email}
+                  onChangeText={setEmail}
+                  keyboardType="email-address"
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                  style={{ marginBottom: 12 }}
+                />
+                <TextInput
+                  label="Current password"
+                  value={currentPassword}
+                  onChangeText={setCurrentPassword}
+                  secureTextEntry
+                  autoCapitalize="none"
+                  style={{ marginBottom: 12 }}
+                />
+                <TextInput
+                  label="New password (optional)"
+                  value={newPassword}
+                  onChangeText={setNewPassword}
+                  secureTextEntry
+                  autoCapitalize="none"
+                  style={{ marginBottom: 16 }}
+                />
+
+                {/* Action Buttons */}
+                <View className="mt-2 flex-row gap-3">
+                  <Pressable
+                    onPress={closeUpdateModal}
+                    disabled={saving}
+                    className="flex-1 items-center justify-center rounded-2xl bg-gray-100 py-4 active:bg-gray-200">
+                    <Text className="font-semibold text-gray-700">Cancel</Text>
+                  </Pressable>
+
+                  <Pressable
+                    onPress={handleUpdate}
+                    disabled={saving}
+                    className={`flex-1 items-center justify-center rounded-2xl py-4 shadow-sm active:opacity-90 ${
+                      saving ? "bg-blue-400" : "bg-blue-600"
+                    }`}>
+                    {saving ? (
+                      <View className="flex-row items-center gap-2">
+                        <ActivityIndicator size="small" color="white" />
+                        <Text className="font-semibold text-white">
+                          Saving...
+                        </Text>
+                      </View>
+                    ) : (
+                      <Text className="font-semibold text-white">
+                        Save Changes
+                      </Text>
+                    )}
+                  </Pressable>
+                </View>
+              </View>
+            </ScrollView>
+          </KeyboardAvoidingView>
+        </Modal>
         <View className="mt-4 border-1 bg-red-400 rounded-full justify-center flex ">
           <Button onPress={handleLogout}>
             <Text className="text-xl font-bold text-white">Logout </Text>
