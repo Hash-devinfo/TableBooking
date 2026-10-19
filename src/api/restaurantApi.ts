@@ -38,6 +38,28 @@ export const createRestaurant = async (
     );
   }
 };
+export const getMyRestaurant = async (): Promise<Restaurant | null> => {
+  const token = await SecureStore.getItemAsync("authToken");
+  if (!token) throw new Error("You must be logged in");
+
+  try {
+    const response = await API.get("/restaurants/mine", {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    return response.data.restaurant;
+  } catch (error: any) {
+    const status = error?.response?.status;
+    const message = error?.response?.data?.message;
+
+    // Only the controller's own "none found" reply means "no restaurant".
+    // A 404 from a wrong URL has no such message, so it is treated as an error.
+    if (status === 404 && typeof message === "string" && /no restaurant/i.test(message)) {
+      return null;
+    }
+
+    throw new Error(message || "Could not load your restaurant");
+  }
+};
 export interface Restaurant {
   _id: string;
   name: string;

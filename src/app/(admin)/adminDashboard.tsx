@@ -1,4 +1,8 @@
-import React, { useCallback, useMemo, useState, type ComponentProps } from "react";
+import React, {
+  useCallback,
+  useState,
+  type ComponentProps,
+} from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -10,7 +14,7 @@ import {
   View,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { Href, router, useFocusEffect } from "expo-router";
+import { router, useFocusEffect } from "expo-router";
 import * as SecureStore from "expo-secure-store";
 import {
   getAdminBookings,
@@ -26,7 +30,6 @@ import { getBookingCode } from "../../utils/booking";
 
 type IconName = ComponentProps<typeof Ionicons>["name"];
 type Tab = "bookings" | "restaurants" | "users";
-type Row = Booking | AdminRestaurant | AdminUser;
 
 const STATUS_STYLES: Record<string, { label: string; className: string }> = {
   pending: { label: "Pending", className: "bg-yellow-100 text-yellow-700" },
@@ -68,7 +71,6 @@ const formatDate = (value?: string) => {
       });
 };
 
-
 const bookingText = (b: Booking) =>
   [
     getBookingCode(b),
@@ -97,8 +99,6 @@ const restaurantText = (r: AdminRestaurant) =>
 const userText = (u: AdminUser) =>
   [personName(u), u.email, u.phone, u.role].join(" ").toLowerCase();
 
-
-
 const StatCard = ({
   label,
   value,
@@ -115,12 +115,10 @@ const StatCard = ({
   <Pressable
     onPress={onPress}
     className="mb-3 w-[48%] rounded-2xl bg-white p-4"
-    style={{ elevation: 2 }}
-  >
+    style={{ elevation: 2 }}>
     <View
       className="h-10 w-10 items-center justify-center rounded-full"
-      style={{ backgroundColor: `${tint}22` }}
-    >
+      style={{ backgroundColor: `${tint}22` }}>
       <Ionicons name={icon} size={20} color={tint} />
     </View>
     <Text className="mt-3 text-2xl font-bold text-gray-900">{value}</Text>
@@ -156,7 +154,9 @@ const BookingCard = ({ item }: { item: Booking }) => {
 const RestaurantCard = ({ item }: { item: AdminRestaurant }) => (
   <View className="mb-3 rounded-2xl bg-white p-4" style={{ elevation: 1 }}>
     <View className="flex-row items-center justify-between">
-      <Text numberOfLines={1} className="flex-1 text-base font-bold text-gray-900">
+      <Text
+        numberOfLines={1}
+        className="flex-1 text-base font-bold text-gray-900">
         {item.name}
       </Text>
       <View className="ml-2 flex-row items-center">
@@ -183,7 +183,9 @@ const RestaurantCard = ({ item }: { item: AdminRestaurant }) => (
 const UserCard = ({ item }: { item: AdminUser }) => (
   <View className="mb-3 rounded-2xl bg-white p-4" style={{ elevation: 1 }}>
     <View className="flex-row items-center justify-between">
-      <Text numberOfLines={1} className="flex-1 text-base font-bold text-gray-900">
+      <Text
+        numberOfLines={1}
+        className="flex-1 text-base font-bold text-gray-900">
         {personName(item)}
       </Text>
       <Pill
@@ -195,8 +197,6 @@ const UserCard = ({ item }: { item: AdminUser }) => (
     <Text className="text-sm text-gray-500">{item.phone}</Text>
   </View>
 );
-
-
 
 const AdminDashboard = () => {
   const [stats, setStats] = useState<AdminStats | null>(null);
@@ -261,16 +261,26 @@ const AdminDashboard = () => {
       },
     ]);
   };
+  
+  
+  const searchWords = query.trim().toLowerCase().split(/\s+/).filter(Boolean);
 
-  const rows: Row[] = useMemo(() => {
-    const terms = query.trim().toLowerCase().split(/\s+/).filter(Boolean);
-    const matches = (text: string) => terms.every((t) => text.includes(t));
+  const matchesSearch = (text: string) => {
+    const lowerText = text.toLowerCase();
+    return searchWords.every((word) => lowerText.includes(word));
+  };
 
-    if (tab === "bookings") return bookings.filter((b) => matches(bookingText(b)));
-    if (tab === "restaurants")
-      return restaurants.filter((r) => matches(restaurantText(r)));
-    return users.filter((u) => matches(userText(u)));
-  }, [tab, query, bookings, restaurants, users]);
+  let rows: (Booking | AdminRestaurant | AdminUser)[] = [];
+
+  if (tab === "bookings") {
+    rows = bookings.filter((booking) => matchesSearch(bookingText(booking)));
+  } else if (tab === "restaurants") {
+    rows = restaurants.filter((restaurant) =>
+      matchesSearch(restaurantText(restaurant)),
+    );
+  } else {
+    rows = users.filter((user) => matchesSearch(userText(user)));
+  }
 
   if (loading) {
     return (
@@ -284,7 +294,9 @@ const AdminDashboard = () => {
     return (
       <View className="flex-1 items-center justify-center bg-gray-50 px-6">
         <Ionicons name="cloud-offline-outline" size={48} color="#9ca3af" />
-        <Text className="mt-3 text-center text-base text-gray-700">{error}</Text>
+        <Text className="mt-3 text-center text-base text-gray-700">
+          {error}
+        </Text>
         <Pressable
           onPress={() => load()}
           className="mt-4 rounded-full bg-blue-700 px-6 py-2">
@@ -305,21 +317,30 @@ const AdminDashboard = () => {
 
   const header = (
     <View>
-      
       <View className="flex-row flex-wrap justify-between">
         <StatCard
           label="Customers"
           value={stats?.users.customers ?? 0}
           icon="people"
           tint="#2563EB"
-          onPress={() => router.push("/(admin)/allUsers")}
+          onPress={() =>
+            router.push({
+              pathname: "/(admin)/allUsers",
+              params: { label: "customer" },
+            })
+          }
         />
         <StatCard
           label="Restaurant owners"
           value={stats?.users.owners ?? 0}
           icon="storefront"
           tint="#7C3AED"
-          onPress={() => router.push("/(admin)/allUsers")}
+          onPress={() =>
+            router.push({
+              pathname: "/(admin)/allUsers",
+              params: { label: "restaurant" },
+            })
+          }
         />
         <StatCard
           label="Restaurants"
@@ -340,14 +361,24 @@ const AdminDashboard = () => {
           value={stats?.bookings.pending ?? 0}
           icon="time"
           tint="#D97706"
-          onPress={() => router.push("/(admin)/allBookings")}
+          onPress={() =>
+            router.push({
+              pathname: "/(admin)/allBookings",
+              params: { label: "pending" },
+            })
+          }
         />
         <StatCard
           label="Confirmed"
           value={stats?.bookings.confirmed ?? 0}
           icon="checkmark-circle"
           tint="#16A34A"
-          onPress={() => router.push("/(admin)/allBookings")}
+          onPress={() =>
+            router.push({
+              pathname: "/(admin)/allBookings",
+              params: { label: "confirmed" },
+            })
+          }
         />
         <StatCard
           label="My Restaurant"
@@ -403,7 +434,9 @@ const AdminDashboard = () => {
   return (
     <View className="flex-1 bg-gray-50 px-4 pt-16">
       <View className="mb-4 flex-row items-center justify-between">
-        <Text className="text-2xl font-bold text-blue-900">Admin Dashboard</Text>
+        <Text className="text-2xl font-bold text-blue-900">
+          Admin Dashboard
+        </Text>
         <Pressable
           onPress={handleLogout}
           hitSlop={8}

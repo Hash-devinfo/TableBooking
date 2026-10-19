@@ -173,7 +173,7 @@ const Favorite = () => {
   }
 
   return (
-    <View className="flex-1 bg-white">
+    <View className="flex-1 bg-white mt-16">
       <View className="mb-4 flex-row items-center justify-between mt-2 px-4">
         <Link href="/home" asChild>
           <Pressable className="h-10 w-10 justify-center">

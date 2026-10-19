@@ -125,6 +125,7 @@ const RestaurantDashboard = () => {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [busyId, setBusyId] = useState<string | null>(null);
+
 const goBack = () => {
   if (router.canGoBack()) router.back();
   
@@ -256,6 +257,7 @@ const goBack = () => {
        <View className="flex-row items-center">
           <Pressable
             onPress={goBack}
+            disabled={!goBack}
             hitSlop={8}
             accessibilityRole="button"
             accessibilityLabel="Go back"
@@ -263,7 +265,7 @@ const goBack = () => {
             <Ionicons name="arrow-back" size={22} color="#2563EB" />
           </Pressable>
           <Text className="flex-1 text-2xl font-bold text-blue-900">
-            Create Your Restaurant
+            Restaurant Dashboard
           </Text>
         </View>
       <View className="my-4">

@@ -264,7 +264,7 @@ export default function SignUp() {
                   setRole(value as Role);
                 }}>
                 <Picker.Item label="Customer" value="customer" />
-                <Picker.Item label="Restaurant" value="restaurant" />
+               <Picker.Item label="Restaurant" value="restaurant" />
                 <Picker.Item label="Admin" value="admin" />
               </Picker>
             </View>

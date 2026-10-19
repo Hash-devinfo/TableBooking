@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
   FlatList,
@@ -9,7 +9,7 @@ import {
   View,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { router, useFocusEffect } from "expo-router";
+import { router, useFocusEffect, useLocalSearchParams } from "expo-router";
 import { getAdminUsers, type AdminUser } from "../../api/adminApi";
 
 type Filter = "all" | "customer" | "restaurant";
@@ -86,10 +86,26 @@ const UserCard = ({ item }: { item: AdminUser }) => {
 
 const AllUsers = () => {
   const [users, setUsers] = useState<AdminUser[]>([]);
-  const [filter, setFilter] = useState<Filter>("all");
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState("");
+
+  const params = useLocalSearchParams<{ label?: string }>();
+
+  const initialFilter = (params.label?.toLowerCase() as Filter) ?? "all";
+  const [filter, setFilter] = useState<Filter>(
+    ["all", "customer", "restaurant"].includes(initialFilter)
+      ? initialFilter
+      : "all",
+  );
+  useEffect(() => {
+    if (params.label) {
+      const paramFilter = params.label.toLowerCase() as Filter;
+      if (["all", "customer", "restaurant"].includes(paramFilter)) {
+        setFilter(paramFilter);
+      }
+    }
+  }, [params.label]);
 
   const load = useCallback(async (silent = false) => {
     try {
@@ -157,10 +173,11 @@ const AllUsers = () => {
           className="mr-3 h-10 w-10 items-center justify-center rounded-full bg-white">
           <Ionicons name="arrow-back" size={22} color="#2563EB" />
         </Pressable>
-        <Text className="text-2xl ml-24 font-bold text-blue-900">All Users</Text>
+        <Text className="text-2xl ml-24 font-bold text-blue-900">
+          All Users
+        </Text>
       </View>
 
-      
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
@@ -216,9 +233,7 @@ const AllUsers = () => {
         }
         ListEmptyComponent={
           <Text className="py-12 text-center text-gray-400">
-            {filter === "all"
-              ? "No users yet."
-              : `No ${activeLabel.toLowerCase()} found.`}
+            {filter === "all" ? "No bookings yet." : `No ${filter} bookings.`}
           </Text>
         }
       />

@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
   FlatList,
@@ -9,10 +9,11 @@ import {
   View,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { router, useFocusEffect } from "expo-router";
+import { Label, router, useFocusEffect } from "expo-router";
 import { getAdminBookings } from "../../api/adminApi";
 import type { Booking } from "../../api/bookingApi";
 import { getBookingCode } from "../../utils/booking";
+import { useLocalSearchParams } from "expo-router";
 
 type Filter = "all" | Booking["status"];
 
@@ -82,12 +83,33 @@ const BookingCard = ({ item }: { item: Booking }) => {
 };
 
 const AllBookings = () => {
+  const params = useLocalSearchParams<{ label?: string }>();
   const [bookings, setBookings] = useState<Booking[]>([]);
-  const [filter, setFilter] = useState<Filter>("all");
+
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState("");
 
+  const initialFilter = (params.label?.toLowerCase() as Filter) ?? "all";
+  const [filter, setFilter] = useState<Filter>(
+    ["all", "pending", "confirmed", "rejected", "cancelled"].includes(
+      initialFilter,
+    )
+      ? initialFilter
+      : "all",
+  );
+  useEffect(() => {
+    if (params.label) {
+      const paramFilter = params.label.toLowerCase() as Filter;
+      if (
+        ["all", "pending", "confirmed", "rejected", "cancelled"].includes(
+          paramFilter,
+        )
+      ) {
+        setFilter(paramFilter);
+      }
+    }
+  }, [params.label]);
   const load = useCallback(async (silent = false) => {
     try {
       if (!silent) setLoading(true);
@@ -117,7 +139,6 @@ const AllBookings = () => {
     else router.replace("/(admin)/adminDashboard");
   };
 
-  // How many bookings each chip will show
   const counts = useMemo(() => {
     const c: Record<Filter, number> = {
       all: bookings.length,
@@ -146,11 +167,10 @@ const AllBookings = () => {
     );
   }
 
-  const activeLabel = FILTERS.find((f) => f.key === filter)?.label ?? "";
+  
 
   return (
     <View className="flex-1 bg-gray-50 pt-16">
-     
       <View className="mb-4 flex-row items-center px-4">
         <Pressable
           onPress={goBack}
@@ -160,7 +180,9 @@ const AllBookings = () => {
           className="mr-3 h-10 w-10 items-center justify-center rounded-full bg-white">
           <Ionicons name="arrow-back" size={22} color="#2563EB" />
         </Pressable>
-        <Text className="text-2xl font-bold text-blue-900 text-center ml-24">All Bookings</Text>
+        <Text className="text-2xl font-bold text-blue-900 text-center ml-24">
+          All Bookings
+        </Text>
       </View>
 
       <ScrollView
@@ -218,9 +240,7 @@ const AllBookings = () => {
         }
         ListEmptyComponent={
           <Text className="py-12 text-center text-gray-400">
-            {filter === "all"
-              ? "No bookings yet."
-              : `No ${activeLabel.toLowerCase()} bookings.`}
+            {filter === "all" ? "No bookings yet." : `No ${filter} bookings.`}
           </Text>
         }
       />

@@ -95,7 +95,8 @@ export default function App() {
       // Initial route redirect upon successful login
       if (userRole === "admin" || userRole === "Admin") {
         router.replace("/(admin)/adminDashboard");
-      } else if (userRole === "restaurant" || userRole === "Restaurant") {
+      } 
+      else if (userRole === "restaurant" || userRole === "Restaurant") {
         try {
           const response = await fetch(
             "http://10.0.2.2:3000/api/restaurants/me/profile",
@@ -123,7 +124,8 @@ export default function App() {
               : "Could not check restaurant profile",
           );
         }
-      } else {
+      } 
+      else {
         router.replace("/home");
       }
     } catch (err) {
