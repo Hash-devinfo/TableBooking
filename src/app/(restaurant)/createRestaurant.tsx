@@ -30,12 +30,6 @@ const formatTime = (d: Date) => {
   return `${h % 12 || 12}:${String(d.getMinutes()).padStart(2, "0")} ${period}`;
 };
 
-
-
-const Section = ({ title }: { title: string }) => (
-  <Text className="mb-3 mt-6 text-xl font-bold text-blue-700">{title}</Text>
-);
-
 const Field = ({
   label,
   required,
@@ -204,7 +198,6 @@ const StringListInput = ({
   );
 };
 
-
 const emptyForm = {
   name: "",
   cuisines: "",
@@ -309,39 +302,54 @@ export default function CreateRestaurant() {
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: 48 }}>
-       
         <View className="flex-row items-center">
           <Text className="flex-1 text-2xl font-bold text-blue-900">
             Create Your Restaurant
           </Text>
         </View>
-
-        <Section title="Basic information" />
-        <Field
-          label="Restaurant name"
-          required
+        <Text className="mb-3 mt-6 text-xl font-bold text-blue-700">
+          Basic information
+        </Text>
+        <Text className="mb-1 text-sm font-semibold text-gray-700">
+          Restaurant name
+        </Text>
+        <TextInput
           value={form.name}
-          onChangeText={set("name")}
           placeholder="e.g. Korean Ramen"
+          placeholderTextColor="#9ca3af"
+          className="rounded-lg border border-blue-300 px-3 py-3 text-base text-gray-900"
+          onChangeText={set("name")}
         />
-        <Field
-          label="Cuisines"
-          required
+        <Text className="mb-1 text-sm font-semibold text-gray-700">
+          Cuisines
+        </Text>
+        <TextInput
           value={form.cuisines}
+          placeholder="e.g. Korean, Pakistani, Chinies..."
+          placeholderTextColor="#9ca3af"
+          className="rounded-lg border border-blue-300 px-3 py-3 text-base text-gray-900"
           onChangeText={set("cuisines")}
-          placeholder="e.g. Korean, Japanese"
         />
-        <Field
-          label="Description"
+        <Text className="mb-1 text-sm font-semibold text-gray-700">
+          Description
+        </Text>
+        <TextInput
           value={form.description}
-          onChangeText={set("description")}
           placeholder="Tell customers what makes your restaurant special"
+          placeholderTextColor="#9ca3af"
+          className="rounded-lg border border-blue-300 px-3 py-3 text-base text-gray-900"
+          onChangeText={set("description")}
           multiline
           textAlignVertical="top"
           style={{ minHeight: 100 }}
         />
 
-        <Section title="Location & contact" />
+        
+        
+        <Text className="mb-3 mt-6 text-xl font-bold text-blue-700">
+          Location & contact
+        </Text>
+
         <Field
           label="City"
           required
@@ -370,8 +378,10 @@ export default function CreateRestaurant() {
           placeholder="+92 300 1234567"
           keyboardType="phone-pad"
         />
+        <Text className="mb-3 mt-6 text-xl font-bold text-blue-700">
+          Opening hours
+        </Text>
 
-        <Section title="Opening hours" />
         <View className="mb-4 flex-row gap-3">
           <TimeField
             label="Opens"
@@ -384,8 +394,10 @@ export default function CreateRestaurant() {
             onChange={set("closingTime")}
           />
         </View>
+        <Text className="mb-3 mt-6 text-xl font-bold text-blue-700">
+          Seating
+        </Text>
 
-        <Section title="Seating" />
         <Field
           label="Total available seats"
           required
@@ -411,8 +423,10 @@ export default function CreateRestaurant() {
           onChange={setFloors}
           suggestions={FLOOR_SUGGESTIONS}
         />
+        <Text className="mb-3 mt-6 text-xl font-bold text-blue-700">
+          Photos
+        </Text>
 
-        <Section title="Photos" />
         <StringListInput
           label="Image links"
           placeholder="https://..."
