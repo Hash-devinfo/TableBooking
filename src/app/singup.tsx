@@ -227,7 +227,7 @@ export default function SignUp() {
                 mode="date"
                 display={Platform.OS === "ios" ? "spinner" : "default"}
                 maximumDate={new Date()}
-                onChange={(onDateCall) => {
+                onValueChange={(onDateCall) => {
                   onDateChange(
                     onDateCall,
                     (onDateCall as any).nativeEvent?.timestamp
