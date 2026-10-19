@@ -32,9 +32,7 @@ const formatTime = (d: Date) => {
 
 
 
-const Section = ({ title }: { title: string }) => (
-  <Text className="mb-3 mt-6 text-xl font-bold text-blue-700">{title}</Text>
-);
+
 
 const Field = ({
   label,
@@ -315,8 +313,8 @@ export default function CreateRestaurant() {
             Create Your Restaurant
           </Text>
         </View>
-
-        <Section title="Basic information" />
+        <Text className="mb-3 mt-6 text-xl font-bold text-blue-700">Basic information</Text>
+        
         <Field
           label="Restaurant name"
           required
@@ -340,8 +338,8 @@ export default function CreateRestaurant() {
           textAlignVertical="top"
           style={{ minHeight: 100 }}
         />
-
-        <Section title="Location & contact" />
+ <Text className="mb-3 mt-6 text-xl font-bold text-blue-700">Location & contact</Text>
+        
         <Field
           label="City"
           required
@@ -370,8 +368,8 @@ export default function CreateRestaurant() {
           placeholder="+92 300 1234567"
           keyboardType="phone-pad"
         />
-
-        <Section title="Opening hours" />
+<Text className="mb-3 mt-6 text-xl font-bold text-blue-700">Opening hours</Text>
+       
         <View className="mb-4 flex-row gap-3">
           <TimeField
             label="Opens"
@@ -384,8 +382,8 @@ export default function CreateRestaurant() {
             onChange={set("closingTime")}
           />
         </View>
-
-        <Section title="Seating" />
+<Text className="mb-3 mt-6 text-xl font-bold text-blue-700">Seating</Text>
+        
         <Field
           label="Total available seats"
           required
@@ -411,8 +409,8 @@ export default function CreateRestaurant() {
           onChange={setFloors}
           suggestions={FLOOR_SUGGESTIONS}
         />
-
-        <Section title="Photos" />
+<Text className="mb-3 mt-6 text-xl font-bold text-blue-700">Photos</Text>
+        
         <StringListInput
           label="Image links"
           placeholder="https://..."
