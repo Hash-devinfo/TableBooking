@@ -76,110 +76,6 @@ const TimeField = ({
   );
 };
 
-// Add / remove a list of short strings (floors, image links)
-const StringListInput = ({
-  label,
-  required,
-  placeholder,
-  items,
-  onChange,
-  suggestions = [],
-  validate,
-  keyboardType,
-}: {
-  label: string;
-  required?: boolean;
-  placeholder: string;
-  items: string[];
-  onChange: (items: string[]) => void;
-  suggestions?: string[];
-  validate?: (value: string) => string | null;
-  keyboardType?: TextInputProps["keyboardType"];
-}) => {
-  const [text, setText] = useState("");
-
-  const add = (raw: string) => {
-    const value = raw.trim();
-    if (!value) return;
-
-    const problem = validate?.(value);
-    if (problem) {
-      Alert.alert("Check this value", problem);
-      return;
-    }
-    if (items.includes(value)) return;
-
-    onChange([...items, value]);
-    setText("");
-  };
-
-  return (
-    <View className="mb-4">
-      <Text className="mb-1 text-sm font-semibold text-gray-700">{label}</Text>
-
-      <View className="flex-row items-center">
-        <TextInput
-          value={text}
-          onChangeText={setText}
-          onSubmitEditing={() => add(text)}
-          placeholder={placeholder}
-          placeholderTextColor="#9ca3af"
-          autoCapitalize="none"
-          keyboardType={keyboardType}
-          returnKeyType="done"
-          className="flex-1 rounded-lg border border-blue-300 px-3 py-3 text-base text-gray-900"
-        />
-        <Pressable
-          onPress={() => add(text)}
-          accessibilityRole="button"
-          accessibilityLabel={`Add ${label}`}
-          className="ml-2 h-12 w-12 items-center justify-center rounded-lg bg-blue-700">
-          <Ionicons name="add" size={24} color="white" />
-        </Pressable>
-      </View>
-
-      {suggestions.length > 0 && (
-        <View className="mt-2 flex-row flex-wrap">
-          {suggestions
-            .filter((s) => !items.includes(s))
-            .map((s) => (
-              <Pressable
-                key={s}
-                onPress={() => add(s)}
-                className="mb-2 mr-2 rounded-full border border-gray-300 bg-gray-50 px-3 py-1">
-                <Text className="text-sm text-gray-600">+ {s}</Text>
-              </Pressable>
-            ))}
-        </View>
-      )}
-
-      {items.length > 0 && (
-        <View className="mt-2 flex-row flex-wrap">
-          {items.map((item) => (
-            <View
-              key={item}
-              className="mb-2 mr-2 flex-row items-center rounded-full bg-blue-100 px-3 py-1">
-              <Text
-                numberOfLines={1}
-                className="max-w-[220px] text-sm text-blue-800">
-                {item}
-              </Text>
-              <Pressable
-                onPress={() => onChange(items.filter((i) => i !== item))}
-                hitSlop={8}
-                accessibilityRole="button"
-                accessibilityLabel={`Remove ${item}`}
-                className="ml-2">
-                <Ionicons name="close-circle" size={16} color="#1d4ed8" />
-              </Pressable>
-            </View>
-          ))}
-        </View>
-      )}
-    </View>
-  );
-};
-
 const emptyForm = {
   name: "",
   cuisines: "",
@@ -203,17 +99,28 @@ export default function CreateRestaurant() {
   const [showErrors, setShowErrors] = useState(false);
   const set = (key: keyof typeof emptyForm) => (value: string) =>
     setForm((f) => ({ ...f, [key]: value }));
+  const [seatingText, setSeatingText] = useState("");
+  const [floorText, setFloorText] = useState("");
 
-  const toggleSeating = (type: string) =>
-    setSeatingTypes((cur) =>
-      cur.includes(type) ? cur.filter((t) => t !== type) : [...cur, type],
-    );
+  const addItem = (
+    text: string,
+    items: string[],
+    setItems: React.Dispatch<React.SetStateAction<string[]>>,
+    clearText: (value: string) => void,
+  ) => {
+    const value = text.trim();
+
+    if (!value || items.includes(value)) return;
+
+    setItems((current) => [...current, value]);
+    clearText("");
+  };
 
   const validate = () => ({
     name: !form.name.trim() ? "Enter the restaurant name." : "",
     cuisines: !form.cuisines.trim() ? "Enter at least one cuisine." : "",
     city: !form.city.trim() ? "Enter the city." : "",
-    province:!form.province.trim() ? "Enter the province." : "",
+    province: !form.province.trim() ? "Enter the province." : "",
     address: !form.address.trim() ? "Enter the address." : "",
     phone: form.phone.trim().length < 7 ? "Enter a valid phone number." : "",
     openingTime: !form.openingTime ? "Select an opening time." : "",
@@ -360,7 +267,9 @@ export default function CreateRestaurant() {
           onChangeText={set("province")}
         />
         {showErrors && errors.province ? (
-          <Text className="mb-3 mt-1 text-sm text-red-600">{errors.province}</Text>
+          <Text className="mb-3 mt-1 text-sm text-red-600">
+            {errors.province}
+          </Text>
         ) : null}
         <Text className="mb-1 text-sm font-semibold text-gray-700">
           Address
@@ -373,7 +282,9 @@ export default function CreateRestaurant() {
           onChangeText={set("address")}
         />
         {showErrors && errors.address ? (
-          <Text className="mb-3 mt-1 text-sm text-red-600">{errors.address}</Text>
+          <Text className="mb-3 mt-1 text-sm text-red-600">
+            {errors.address}
+          </Text>
         ) : null}
         <Text className="mb-1 text-sm font-semibold text-gray-700">Phone</Text>
         <TextInput
@@ -418,43 +329,155 @@ export default function CreateRestaurant() {
           keyboardType="number-pad"
         />
         {showErrors && errors.availableSeats ? (
-          <Text className="mb-3 mt-1 text-sm text-red-600">{errors.availableSeats}</Text>
+          <Text className="mb-3 mt-1 text-sm text-red-600">
+            {errors.availableSeats}
+          </Text>
         ) : null}
-        <StringListInput
-          label="Seating types"
-          required
-          placeholder="Add a seating type, e.g. Terrace"
-          items={seatingTypes}
-          onChange={setSeatingTypes}
-          suggestions={SEATING_OPTIONS}
-        />
 
-        <StringListInput
-          label="Floors"
-          placeholder="Add a floor, e.g. Rooftop"
-          items={floors}
-          onChange={setFloors}
-          suggestions={FLOOR_SUGGESTIONS}
-        />
+        {/* Seating types */}
+        <View className="mb-2 mt-2">
+          <Text className="mb-1 text-sm font-semibold text-gray-700">
+            Seating types
+          </Text>
+
+          <View className="flex-row items-center">
+            <TextInput
+              value={seatingText}
+              onChangeText={setSeatingText}
+              onSubmitEditing={() =>
+                addItem(
+                  seatingText,
+                  seatingTypes,
+                  setSeatingTypes,
+                  setSeatingText,
+                )
+              }
+              placeholder="Add a seating type, e.g. Terrace"
+              placeholderTextColor="#9ca3af"
+              returnKeyType="done"
+              className="flex-1 rounded-lg border border-blue-300 px-3 py-3 text-base text-gray-900"
+            />
+            <Pressable
+              onPress={() =>
+                addItem(
+                  seatingText,
+                  seatingTypes,
+                  setSeatingTypes,
+                  setSeatingText,
+                )
+              }
+              accessibilityRole="button"
+              accessibilityLabel="Add seating type"
+              className="ml-2 h-12 w-12 items-center justify-center rounded-lg bg-blue-700">
+              <Ionicons name="add" size={24} color="white" />
+            </Pressable>
+          </View>
+
+          <View className="mt-2 flex-row flex-wrap">
+            {SEATING_OPTIONS.filter(
+              (option) => !seatingTypes.includes(option),
+            ).map((option) => (
+              <Pressable
+                key={option}
+                onPress={() =>
+                  addItem(option, seatingTypes, setSeatingTypes, setSeatingText)
+                }
+                className="mb-2 mr-2 rounded-full border border-gray-300 bg-gray-50 px-3 py-1">
+                <Text className="text-sm text-gray-600">+ {option}</Text>
+              </Pressable>
+            ))}
+          </View>
+
+          <View className="mt-2 flex-row flex-wrap">
+            {seatingTypes.map((type) => (
+              <View
+                key={type}
+                className="mb-2 mr-2 flex-row items-center rounded-full bg-blue-100 px-3 py-1">
+                <Text className="text-sm text-blue-800">{type}</Text>
+                <Pressable
+                  onPress={() =>
+                    setSeatingTypes((current) =>
+                      current.filter((item) => item !== type),
+                    )
+                  }
+                  accessibilityRole="button"
+                  accessibilityLabel={`Remove ${type}`}
+                  className="ml-2">
+                  <Ionicons name="close-circle" size={16} color="#1d4ed8" />
+                </Pressable>
+              </View>
+            ))}
+          </View>
+        </View>
+
+        {/* Floors */}
+        <View className="mb-2">
+          <Text className="mb-1 text-sm font-semibold text-gray-700">
+            Floors
+          </Text>
+
+          <View className="flex-row items-center">
+            <TextInput
+              value={floorText}
+              onChangeText={setFloorText}
+              onSubmitEditing={() =>
+                addItem(floorText, floors, setFloors, setFloorText)
+              }
+              placeholder="Add a floor, e.g. Rooftop"
+              placeholderTextColor="#9ca3af"
+              returnKeyType="done"
+              className="flex-1 rounded-lg border border-blue-300 px-3 py-3 text-base text-gray-900"
+            />
+            <Pressable
+              onPress={() =>
+                addItem(floorText, floors, setFloors, setFloorText)
+              }
+              accessibilityRole="button"
+              accessibilityLabel="Add floor"
+              className="ml-2 h-12 w-12 items-center justify-center rounded-lg bg-blue-700">
+              <Ionicons name="add" size={24} color="white" />
+            </Pressable>
+          </View>
+
+          <View className="mt-2 flex-row flex-wrap">
+            {FLOOR_SUGGESTIONS.filter((floor) => !floors.includes(floor)).map(
+              (floor) => (
+                <Pressable
+                  key={floor}
+                  onPress={() =>
+                    addItem(floor, floors, setFloors, setFloorText)
+                  }
+                  className="mb-2 mr-2 rounded-full border border-gray-300 bg-gray-50 px-3 py-1">
+                  <Text className="text-sm text-gray-600">+ {floor}</Text>
+                </Pressable>
+              ),
+            )}
+          </View>
+
+          <View className="mt-2 flex-row flex-wrap">
+            {floors.map((floor) => (
+              <View
+                key={floor}
+                className="mb-2 mr-2 flex-row items-center rounded-full bg-blue-100 px-3 py-1">
+                <Text className="text-sm text-blue-800">{floor}</Text>
+                <Pressable
+                  onPress={() =>
+                    setFloors((current) =>
+                      current.filter((item) => item !== floor),
+                    )
+                  }
+                  accessibilityRole="button"
+                  accessibilityLabel={`Remove ${floor}`}
+                  className="ml-2">
+                  <Ionicons name="close-circle" size={16} color="#1d4ed8" />
+                </Pressable>
+              </View>
+            ))}
+          </View>
+        </View>
+
         <Text className="mb-3 mt-6 text-xl font-bold text-blue-700">
           Photos
-        </Text>
-
-        <StringListInput
-          label="Image links"
-          placeholder="https://..."
-          items={images}
-          onChange={setImages}
-          keyboardType="url"
-          validate={(v) =>
-            /^https?:\/\//i.test(v)
-              ? null
-              : "Image links must start with http:// or https://"
-          }
-        />
-        <Text className="-mt-2 mb-2 text-xs text-gray-500">
-          Use direct links to the picture itself. The first image is shown on
-          your restaurant's card.
         </Text>
 
         <Pressable
