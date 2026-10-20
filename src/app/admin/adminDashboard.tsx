@@ -23,6 +23,7 @@ import {
 } from "../../api/adminApi";
 import type { Booking } from "../../api/bookingApi";
 import { getBookingCode } from "../../utils/booking";
+import { getMyRestaurant, type Restaurant } from "../../api/restaurantApi";
 
 type IconName = ComponentProps<typeof Ionicons>["name"];
 type Tab = "bookings" | "restaurants" | "users";
@@ -199,6 +200,7 @@ const AdminDashboard = () => {
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [restaurants, setRestaurants] = useState<AdminRestaurant[]>([]);
   const [users, setUsers] = useState<AdminUser[]>([]);
+  const [myRestaurant, setMyRestaurant] = useState<Restaurant | null>(null);
 
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -206,28 +208,25 @@ const AdminDashboard = () => {
 
   const [tab, setTab] = useState<Tab>("bookings");
   const [query, setQuery] = useState("");
-const [currentUserId, setCurrentUserId] = useState<string | null>(null);
-
-
-
-
 
   const load = useCallback(async (silent = false) => {
     try {
       if (!silent) setLoading(true);
       setError("");
 
-      const [s, b, r, u] = await Promise.all([
+      const [s, b, r, u, ownedRestaurant] = await Promise.all([
         getAdminStats(),
         getAdminBookings(),
         getAdminRestaurants(),
         getAdminUsers(),
+        getMyRestaurant(),
       ]);
 
       setStats(s);
       setBookings(b);
       setRestaurants(r);
       setUsers(u);
+      setMyRestaurant(ownedRestaurant);
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : "Could not load dashboard.");
     } finally {
@@ -240,26 +239,6 @@ const [currentUserId, setCurrentUserId] = useState<string | null>(null);
       load();
     }, [load]),
   );
-    // Fetch or retrieve the current user ID on load
-  useFocusEffect(
-    useCallback(() => {
-      let isMounted = true;
-      async function fetchUser() {
-        // If you store user ID in SecureStore during login:
-        const storedId = await SecureStore.getItemAsync("userId"); 
-        if (isMounted) setCurrentUserId(storedId);
-      }
-      fetchUser();
-      load();
-      return () => { isMounted = false; };
-    }, [load])
-  );
-
-  // 2. Correctly check if the logged-in user actually owns a restaurant in the list
-  const hasRestaurant = restaurants.some((r) => {
-    const ownerId = typeof r.owner === "object" ? r.owner?._id : r.owner;
-    return ownerId === currentUserId;
-  });
 
   const onRefresh = async () => {
     setRefreshing(true);
@@ -400,19 +379,26 @@ const [currentUserId, setCurrentUserId] = useState<string | null>(null);
             })
           }
         />
-        <StatCard
-          label={hasRestaurant ? "My Restaurant" : "Create Restaurant"}
-          value={hasRestaurant ? 1 : 0}
-          icon={hasRestaurant ? "restaurant" : "add-circle-outline"}
-          tint={hasRestaurant ? "#D97706" : "#2563EB"}
-          onPress={() => {
-            if (hasRestaurant) {
-              router.push("/restaurant/restaurantDashboard");
-            } else {
-              router.push("/restaurant/createRestaurant");
-            }
-          }}
-        />
+        {myRestaurant ? (
+          <StatCard
+            label="My Restaurant"
+            value={1}
+            icon="restaurant"
+            tint="#D97706"
+            onPress={() => router.push("/restaurant/restaurantDashboard")}
+          />
+        ) : (
+          <Pressable
+            onPress={() => router.push("/restaurant/createRestaurant")}
+            accessibilityRole="button"
+            className="mb-3 w-[48%] items-center justify-center rounded-2xl bg-blue-700 p-4"
+            style={{ elevation: 2 }}>
+            <Ionicons name="add-circle-outline" size={28} color="white" />
+            <Text className="mt-2 text-center font-semibold text-white">
+              Create Restaurant
+            </Text>
+          </Pressable>
+        )}
       </View>
 
       <View className="mb-3 flex-row rounded-xl bg-gray-200 p-1">

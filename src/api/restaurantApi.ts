@@ -43,7 +43,7 @@ export const getMyRestaurant = async (): Promise<Restaurant | null> => {
   if (!token) throw new Error("You must be logged in");
 
   try {
-    const response = await API.get("/restaurants/mine", {
+    const response = await API.get("/restaurants/me/profile", {
       headers: { Authorization: `Bearer ${token}` },
     });
     return response.data.restaurant;
