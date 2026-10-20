@@ -519,7 +519,7 @@ export default function CreateRestaurant() {
         <Text className="mb-3 mt-6 text-xl font-bold text-blue-700">
           Photos
         </Text>
-        {/* <ImageUploader images={images} onChange={setImages} /> */}
+        <ImageUploader images={images} onChange={setImages} />
         <Pressable
           onPress={handleSubmit}
           disabled={submitting}
