@@ -1,4 +1,6 @@
 import * as SecureStore from "expo-secure-store";
+import { File } from "expo-file-system";
+import { fetch } from "expo/fetch";
 
 const API_URL = "http://10.0.2.2:3000/api";
 
@@ -25,39 +27,44 @@ const getSignature = async (type: UploadType): Promise<Signature> => {
   });
 
   const data = await response.json().catch(() => ({}));
-  if (!response.ok) throw new Error(data.message || "Could not start the upload");
+  if (!response.ok) {
+    throw new Error(data.message || "Could not start the upload");
+  }
 
   return data as Signature;
 };
 
-// Uploads one local image and returns its permanent https URL
 export const uploadImage = async (
   uri: string,
   type: UploadType,
-  mimeType?: string,
 ): Promise<string> => {
   const sig = await getSignature(type);
 
   const form = new FormData();
-  form.append("file", {
-    uri,
-    type: mimeType || "image/jpeg",
-    name: `photo-${Date.now()}.jpg`,
-  } as any);
+  form.append("file", new File(uri));
   form.append("api_key", sig.apiKey);
   form.append("signature", sig.signature);
-  Object.entries(sig.params).forEach(([key, value]) =>
-    form.append(key, String(value)),
-  );
 
-  // No Content-Type header: fetch adds the multipart boundary itself
+  Object.entries(sig.params).forEach(([key, value]) => {
+    form.append(key, String(value));
+  });
+
   const response = await fetch(
     `https://api.cloudinary.com/v1_1/${sig.cloudName}/image/upload`,
-    { method: "POST", body: form },
+    {
+      method: "POST",
+      body: form,
+    },
   );
 
   const data = await response.json().catch(() => ({}));
-  if (!response.ok) throw new Error(data?.error?.message || "Upload failed");
+  if (!response.ok) {
+    throw new Error(data?.error?.message || "Upload failed");
+  }
+
+  if (!data.secure_url) {
+    throw new Error("Cloudinary did not return an image URL");
+  }
 
   return data.secure_url as string;
 };

@@ -227,14 +227,7 @@ export default function SignUp() {
                 mode="date"
                 display={Platform.OS === "ios" ? "spinner" : "default"}
                 maximumDate={new Date()}
-                onChange={(onDateCall) => {
-                  onDateChange(
-                    onDateCall,
-                    (onDateCall as any).nativeEvent?.timestamp
-                      ? new Date((onDateCall as any).nativeEvent.timestamp)
-                      : undefined,
-                  );
-                }}
+                onChange={onDateChange}
               />
             )}
 
@@ -264,7 +257,7 @@ export default function SignUp() {
                   setRole(value as Role);
                 }}>
                 <Picker.Item label="Customer" value="customer" />
-               <Picker.Item label="Restaurant" value="restaurant" />
+                <Picker.Item label="Restaurant" value="restaurant" />
                 <Picker.Item label="Admin" value="admin" />
               </Picker>
             </View>

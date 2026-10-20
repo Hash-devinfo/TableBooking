@@ -15,6 +15,7 @@ import { Ionicons } from "@expo/vector-icons";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { router } from "expo-router";
 import { createRestaurant, resolveImageUrl } from "../../api/restaurantApi";
+import ImageUploader from "../components/ImageUploader";
 
 const SEATING_OPTIONS = ["Indoor", "Outdoor", "Smoking"];
 const FLOOR_SUGGESTIONS = [
@@ -305,7 +306,7 @@ export default function CreateRestaurant() {
             <Text className="mb-1 text-sm font-semibold text-gray-700">
               Closes<Text className="text-red-500"> *</Text>
             </Text>
-              {showErrors && errors.closingTime ? (
+            {showErrors && errors.closingTime ? (
               <Text className="mb-3 mt-1 text-sm text-red-600">
                 {errors.closingTime}
               </Text>
@@ -518,6 +519,7 @@ export default function CreateRestaurant() {
         <Text className="mb-3 mt-6 text-xl font-bold text-blue-700">
           Photos
         </Text>
+        <ImageUploader images={images} onChange={setImages} />
         <Pressable
           onPress={handleSubmit}
           disabled={submitting}
