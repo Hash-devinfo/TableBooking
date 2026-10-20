@@ -200,7 +200,7 @@ export default function CreateRestaurant() {
 
   const [images, setImages] = useState<string[]>([]);
   const [submitting, setSubmitting] = useState(false);
-
+  const [showErrors, setShowErrors] = useState(false);
   const set = (key: keyof typeof emptyForm) => (value: string) =>
     setForm((f) => ({ ...f, [key]: value }));
 
@@ -209,30 +209,30 @@ export default function CreateRestaurant() {
       cur.includes(type) ? cur.filter((t) => t !== type) : [...cur, type],
     );
 
-  const validate = (): string | null => {
-    if (!form.name.trim()) return "Enter the restaurant name.";
-    if (!form.cuisines.trim()) return "Enter at least one cuisine.";
-    if (!form.city.trim()) return "Enter the city.";
-    if (!form.address.trim()) return "Enter the address.";
-    if (form.phone.trim().length < 7) return "Enter a valid phone number.";
-    if (!form.openingTime || !form.closingTime)
-      return "Select the opening and closing times.";
-
-    const seats = Number(form.availableSeats);
-    if (!Number.isInteger(seats) || seats < 1)
-      return "Available seats must be a whole number of at least 1.";
-
-    if (seatingTypes.length === 0) return "Choose at least one seating type.";
-    if (floors.length === 0) return "Add at least one floor.";
-    return null;
-  };
+  const validate = () => ({
+    name: !form.name.trim() ? "Enter the restaurant name." : "",
+    cuisines: !form.cuisines.trim() ? "Enter at least one cuisine." : "",
+    city: !form.city.trim() ? "Enter the city." : "",
+    address: !form.address.trim() ? "Enter the address." : "",
+    phone: form.phone.trim().length < 7 ? "Enter a valid phone number." : "",
+    openingTime: !form.openingTime ? "Select an opening time." : "",
+    closingTime: !form.closingTime ? "Select a closing time." : "",
+    availableSeats:
+      !Number.isInteger(Number(form.availableSeats)) ||
+      Number(form.availableSeats) < 1
+        ? "Available seats must be a whole number of at least 1."
+        : "",
+    seatingTypes:
+      seatingTypes.length === 0 ? "Choose at least one seating type." : "",
+    floors: floors.length === 0 ? "Add at least one floor." : "",
+  });
 
   const handleSubmit = async () => {
     const problem = validate();
-    if (problem) {
-      Alert.alert("Missing information", problem);
-      return;
-    }
+    setShowErrors(true);
+
+    const errors = validate();
+    if (Object.values(errors).some(Boolean)) return;
 
     try {
       setSubmitting(true);
