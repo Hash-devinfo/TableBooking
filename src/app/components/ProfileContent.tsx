@@ -141,6 +141,7 @@ const ProfileContent = ({ showFoodInterest = true }: Props) => {
         address: u?.address,
         phone: u?.phone,
         email: u?.email,
+        avatar: u?.avatar,
       });
     } catch (e) {
       console.log("Error loading profile:", e);
