@@ -91,7 +91,7 @@ export default function CreateRestaurant() {
   });
   const errors = validate();
   const handleSubmit = async () => {
-    const problem = validate();
+    
     setShowErrors(true);
 
     const errors = validate();
@@ -494,7 +494,6 @@ export default function CreateRestaurant() {
               ),
             )}
           </View>
-
           <View className="mt-2 flex-row flex-wrap">
             {floors.map((floor) => (
               <View
