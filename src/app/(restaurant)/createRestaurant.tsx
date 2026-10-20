@@ -213,6 +213,7 @@ export default function CreateRestaurant() {
     name: !form.name.trim() ? "Enter the restaurant name." : "",
     cuisines: !form.cuisines.trim() ? "Enter at least one cuisine." : "",
     city: !form.city.trim() ? "Enter the city." : "",
+    province:!form.province.trim() ? "Enter the province." : "",
     address: !form.address.trim() ? "Enter the address." : "",
     phone: form.phone.trim().length < 7 ? "Enter a valid phone number." : "",
     openingTime: !form.openingTime ? "Select an opening time." : "",
@@ -226,7 +227,7 @@ export default function CreateRestaurant() {
       seatingTypes.length === 0 ? "Choose at least one seating type." : "",
     floors: floors.length === 0 ? "Add at least one floor." : "",
   });
-
+  const errors = validate();
   const handleSubmit = async () => {
     const problem = validate();
     setShowErrors(true);
@@ -302,6 +303,9 @@ export default function CreateRestaurant() {
           className="rounded-lg border border-blue-300 px-3 py-3 text-base text-gray-900"
           onChangeText={set("name")}
         />
+        {showErrors && errors.name ? (
+          <Text className="mb-3 mt-1 text-sm text-red-600">{errors.name}</Text>
+        ) : null}
         <Text className="mb-1 text-sm font-semibold text-gray-700">
           Cuisines
         </Text>
@@ -312,6 +316,11 @@ export default function CreateRestaurant() {
           className="rounded-lg border border-blue-300 px-3 py-3 text-base text-gray-900"
           onChangeText={set("cuisines")}
         />
+        {showErrors && errors.cuisines ? (
+          <Text className="mb-3 mt-1 text-sm text-red-600">
+            {errors.cuisines}
+          </Text>
+        ) : null}
         <Text className="mb-1 text-sm font-semibold text-gray-700">
           Description
         </Text>
@@ -337,6 +346,9 @@ export default function CreateRestaurant() {
           className="rounded-lg border border-blue-300 px-3 py-3 text-base text-gray-900"
           onChangeText={set("city")}
         />
+        {showErrors && errors.city ? (
+          <Text className="mb-3 mt-1 text-sm text-red-600">{errors.city}</Text>
+        ) : null}
         <Text className="mb-1 text-sm font-semibold text-gray-700">
           Province
         </Text>
@@ -347,6 +359,9 @@ export default function CreateRestaurant() {
           className="rounded-lg border border-blue-300 px-3 py-3 text-base text-gray-900"
           onChangeText={set("province")}
         />
+        {showErrors && errors.province ? (
+          <Text className="mb-3 mt-1 text-sm text-red-600">{errors.province}</Text>
+        ) : null}
         <Text className="mb-1 text-sm font-semibold text-gray-700">
           Address
         </Text>
@@ -357,6 +372,9 @@ export default function CreateRestaurant() {
           className="rounded-lg border border-blue-300 px-3 py-3 text-base text-gray-900"
           onChangeText={set("address")}
         />
+        {showErrors && errors.address ? (
+          <Text className="mb-3 mt-1 text-sm text-red-600">{errors.address}</Text>
+        ) : null}
         <Text className="mb-1 text-sm font-semibold text-gray-700">Phone</Text>
         <TextInput
           value={form.phone}
@@ -366,7 +384,9 @@ export default function CreateRestaurant() {
           onChangeText={set("phone")}
           keyboardType="phone-pad"
         />
-
+        {showErrors && errors.phone ? (
+          <Text className="mb-3 mt-1 text-sm text-red-600">{errors.phone}</Text>
+        ) : null}
         <Text className="mb-3 mt-6 text-xl font-bold text-blue-700">
           Opening hours
         </Text>
@@ -397,7 +417,9 @@ export default function CreateRestaurant() {
           onChangeText={set("availableSeats")}
           keyboardType="number-pad"
         />
-
+        {showErrors && errors.availableSeats ? (
+          <Text className="mb-3 mt-1 text-sm text-red-600">{errors.availableSeats}</Text>
+        ) : null}
         <StringListInput
           label="Seating types"
           required
