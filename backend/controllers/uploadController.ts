@@ -56,6 +56,6 @@ export const getUploadSignature = (req: AuthRequest, res: Response) => {
     cloudName: CLOUDINARY_CLOUD_NAME,
     apiKey: CLOUDINARY_API_KEY,
     signature,
-    params, // the app sends exactly these along with the file
+    params, 
   });
 };

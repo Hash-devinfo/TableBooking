@@ -14,6 +14,7 @@ export interface IUser extends Document {
   favorites: mongoose.Types.ObjectId[];
   address: string;
   role: UserRole;
+  avatar?: string;
   comparePassword(candidatePassword: string): Promise<boolean>;
 }
 
@@ -57,6 +58,7 @@ const userSchema = new Schema<IUser>(
       required: true,
       default: "customer",
     },
+    avatar: { type: String },
     favorites: [{ type: Schema.Types.ObjectId, ref: "Restaurant" }],
   },
   { timestamps: true },
