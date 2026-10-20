@@ -524,7 +524,7 @@ export default function CreateRestaurant() {
           onPress={handleSubmit}
           disabled={submitting}
           accessibilityRole="button"
-          className={`mt-6 items-center rounded-full py-4 ${
+          className={`mt-4 items-center rounded-full py-4 ${
             submitting ? "bg-blue-400" : "bg-blue-700 mb-4"
           }`}>
           {submitting ? (
