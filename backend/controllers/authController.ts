@@ -167,7 +167,7 @@ export const login = async (req: Request, res: Response) => {
       message: "Login successful",
       token,
       user: safeUser,
-      hasRestaurant: !!restaurantExists
+      hasRestaurant: !!restaurantExists,
     });
   } catch (error) {
     console.error("Login error:", error);
@@ -210,6 +210,7 @@ export const updateAccount = async (req: AuthRequest, res: Response) => {
       email,
       currentPassword,
       newPassword,
+      avatar,
     } = req.body;
 
     // Simple profile fields
@@ -273,6 +274,17 @@ export const updateAccount = async (req: AuthRequest, res: Response) => {
           .json({ message: "New password must be at least 8 characters" });
       }
       user.password = await bcrypt.hash(newPassword, 10);
+    }
+    if (avatar !== undefined) {
+      const prefix = `https://res.cloudinary.com/${process.env.CLOUDINARY_CLOUD_NAME}/`;
+
+      if (avatar === "") {
+        user.avatar = undefined; // remove the photo
+      } else if (typeof avatar !== "string" || !avatar.startsWith(prefix)) {
+        return res.status(400).json({ message: "Invalid profile image" });
+      } else {
+        user.avatar = avatar;
+      }
     }
 
     await user.save();
