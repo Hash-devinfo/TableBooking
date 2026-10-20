@@ -357,6 +357,11 @@ export default function CreateRestaurant() {
               returnKeyType="done"
               className="flex-1 rounded-lg border border-blue-300 px-3 py-3 text-base text-gray-900"
             />
+            {showErrors && errors.name ? (
+              <Text className="mb-3 mt-1 text-sm text-red-600">
+                {errors.seatingTypes}
+              </Text>
+            ) : null}
             <Pressable
               onPress={() =>
                 addItem(
@@ -428,6 +433,11 @@ export default function CreateRestaurant() {
               returnKeyType="done"
               className="flex-1 rounded-lg border border-blue-300 px-3 py-3 text-base text-gray-900"
             />
+            {showErrors && errors.name ? (
+              <Text className="mb-3 mt-1 text-sm text-red-600">
+                {errors.floors}
+              </Text>
+            ) : null}
             <Pressable
               onPress={() =>
                 addItem(floorText, floors, setFloors, setFloorText)
