@@ -24,8 +24,6 @@ const FLOOR_SUGGESTIONS = [
   "Rooftop",
 ];
 
-
-
 const emptyForm = {
   name: "",
   cuisines: "",
@@ -262,7 +260,11 @@ export default function CreateRestaurant() {
             <Text className="mb-1 text-sm font-semibold text-gray-700">
               Opens<Text className="text-red-500"> *</Text>
             </Text>
-
+            {showErrors && errors.openingTime ? (
+              <Text className="mb-3 mt-1 text-sm text-red-600">
+                {errors.openingTime}
+              </Text>
+            ) : null}
             <Pressable
               onPress={() => setShowOpeningPicker(true)}
               className="flex-row items-center justify-between rounded-lg border border-blue-300 px-3 py-3">
@@ -303,7 +305,11 @@ export default function CreateRestaurant() {
             <Text className="mb-1 text-sm font-semibold text-gray-700">
               Closes<Text className="text-red-500"> *</Text>
             </Text>
-
+              {showErrors && errors.closingTime ? (
+              <Text className="mb-3 mt-1 text-sm text-red-600">
+                {errors.closingTime}
+              </Text>
+            ) : null}
             <Pressable
               onPress={() => setShowClosingPicker(true)}
               className="flex-row items-center justify-between rounded-lg border border-blue-300 px-3 py-3">
@@ -339,7 +345,7 @@ export default function CreateRestaurant() {
             )}
           </View>
         </View>
-        
+
         <Text className="mb-3 mt-6 text-xl font-bold text-blue-700">
           Seating
         </Text>
