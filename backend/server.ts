@@ -4,10 +4,11 @@ import cors from "cors";
 import connectDB from "./config/db.js";
 import authRoutes from "./routes/authRoutes.js";
 import bookingRoutes from "./routes/bookingRoutes.js";
-import restaurantRoutes from "./routes/restaurantRouters.js"
-
-
+import restaurantRoutes from "./routes/restaurantRouters.js";
+import adminRoutes from "./routes/adminRoutes.js";
 import favoriteRoutes from "./routes/favoriteRoutes.js";
+import uploadRoutes from "./routes/uploadRoutes.js";
+
 
 const app = express();
 
@@ -23,8 +24,8 @@ app.use("/api/auth", authRoutes);
 app.use("/api/bookings", bookingRoutes);
 app.use("/api/restaurants", restaurantRoutes);
 app.use("/api/favorites", favoriteRoutes);
-import adminRoutes from "./routes/adminRoutes.js";
 app.use("/api/admin", adminRoutes);
+app.use("/api/uploads", uploadRoutes);
 const port = process.env.PORT || 3000;
 
 app.get("/", (req: Request, res: Response) => {
