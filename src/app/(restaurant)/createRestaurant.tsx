@@ -30,24 +30,6 @@ const formatTime = (d: Date) => {
   return `${h % 12 || 12}:${String(d.getMinutes()).padStart(2, "0")} ${period}`;
 };
 
-const Field = ({
-  label,
-  required,
-  ...props
-}: TextInputProps & { label: string; required?: boolean }) => (
-  <View className="mb-4">
-    <Text className="mb-1 text-sm font-semibold text-gray-700">
-      {label}
-      {required ? <Text className="text-red-500"> *</Text> : null}
-    </Text>
-    <TextInput
-      placeholderTextColor="#9ca3af"
-      className="rounded-lg border border-blue-300 px-3 py-3 text-base text-gray-900"
-      {...props}
-    />
-  </View>
-);
-
 const TimeField = ({
   label,
   value,
@@ -344,40 +326,47 @@ export default function CreateRestaurant() {
           style={{ minHeight: 100 }}
         />
 
-        
-        
         <Text className="mb-3 mt-6 text-xl font-bold text-blue-700">
           Location & contact
         </Text>
-
-        <Field
-          label="City"
-          required
+        <Text className="mb-1 text-sm font-semibold text-gray-700">City</Text>
+        <TextInput
           value={form.city}
-          onChangeText={set("city")}
           placeholder="e.g. Lahore"
+          placeholderTextColor="#9ca3af"
+          className="rounded-lg border border-blue-300 px-3 py-3 text-base text-gray-900"
+          onChangeText={set("city")}
         />
-        <Field
-          label="Province"
+        <Text className="mb-1 text-sm font-semibold text-gray-700">
+          Province
+        </Text>
+        <TextInput
           value={form.province}
-          onChangeText={set("province")}
           placeholder="e.g. Punjab"
+          placeholderTextColor="#9ca3af"
+          className="rounded-lg border border-blue-300 px-3 py-3 text-base text-gray-900"
+          onChangeText={set("province")}
         />
-        <Field
-          label="Address"
-          required
+        <Text className="mb-1 text-sm font-semibold text-gray-700">
+          Address
+        </Text>
+        <TextInput
           value={form.address}
-          onChangeText={set("address")}
           placeholder="Street, area"
+          placeholderTextColor="#9ca3af"
+          className="rounded-lg border border-blue-300 px-3 py-3 text-base text-gray-900"
+          onChangeText={set("address")}
         />
-        <Field
-          label="Phone"
-          required
+        <Text className="mb-1 text-sm font-semibold text-gray-700">Phone</Text>
+        <TextInput
           value={form.phone}
-          onChangeText={set("phone")}
           placeholder="+92 300 1234567"
+          placeholderTextColor="#9ca3af"
+          className="rounded-lg border border-blue-300 px-3 py-3 text-base text-gray-900"
+          onChangeText={set("phone")}
           keyboardType="phone-pad"
         />
+
         <Text className="mb-3 mt-6 text-xl font-bold text-blue-700">
           Opening hours
         </Text>
@@ -397,13 +386,15 @@ export default function CreateRestaurant() {
         <Text className="mb-3 mt-6 text-xl font-bold text-blue-700">
           Seating
         </Text>
-
-        <Field
-          label="Total available seats"
-          required
+        <Text className="mb-1 text-sm font-semibold text-gray-700">
+          Total available seats
+        </Text>
+        <TextInput
           value={form.availableSeats}
-          onChangeText={set("availableSeats")}
           placeholder="e.g. 40"
+          placeholderTextColor="#9ca3af"
+          className="rounded-lg border border-blue-300 px-3 py-3 text-base text-gray-900"
+          onChangeText={set("availableSeats")}
           keyboardType="number-pad"
         />
 
