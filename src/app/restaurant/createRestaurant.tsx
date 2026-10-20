@@ -125,7 +125,7 @@ export default function CreateRestaurant() {
       Alert.alert("Restaurant created", "Your restaurant is now live.", [
         {
           text: "OK",
-          onPress: () => router.replace("/(restaurant)/restaurantDashboard"),
+          onPress: () => router.replace("/restaurant/restaurantDashboard"),
         },
       ]);
     } catch (error: unknown) {

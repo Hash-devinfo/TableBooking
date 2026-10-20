@@ -133,7 +133,7 @@ const AllUsers = () => {
 
   const goBack = () => {
     if (router.canGoBack()) router.back();
-    else router.replace("/(admin)/adminDashboard");
+    else router.replace("/admin/adminDashboard");
   };
 
   // How many users each chip will show

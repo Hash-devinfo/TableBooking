@@ -212,7 +212,7 @@ const Restaurants = () => {
 
   const goBack = () => {
     if (router.canGoBack()) router.back();
-    else router.replace("/(admin)/adminDashboard");
+    else router.replace("/admin/adminDashboard");
   };
 
   const isNew = useCallback(

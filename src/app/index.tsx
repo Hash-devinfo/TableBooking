@@ -31,7 +31,7 @@ export default function App() {
 
         if (token && rememberPreference === "true") {
           if (userRole === "admin" || userRole === "Admin") {
-            router.replace("/(admin)/adminDashboard");
+            router.replace("/admin/adminDashboard");
           } else if (userRole === "restaurant" || userRole === "Restaurant") {
             const response = await fetch(
               "http://10.0.2.2:3000/api/restaurants/me/profile",
@@ -43,9 +43,9 @@ export default function App() {
             );
 
             if (response.ok) {
-              router.replace("/(restaurant)/restaurantDashboard");
+              router.replace("/restaurant/restaurantDashboard");
             } else if (response.status === 404) {
-              router.replace("/(restaurant)/createRestaurant");
+              router.replace("/restaurant/createRestaurant");
             } else {
               const errorData = await response.json().catch(() => ({}));
               throw new Error(
@@ -94,7 +94,7 @@ export default function App() {
 
       // Initial route redirect upon successful login
       if (userRole === "admin" || userRole === "Admin") {
-        router.replace("/(admin)/adminDashboard");
+        router.replace("/admin/adminDashboard");
       } 
       else if (userRole === "restaurant" || userRole === "Restaurant") {
         try {
@@ -108,9 +108,9 @@ export default function App() {
           );
 
           if (response.ok) {
-            router.replace("/(restaurant)/restaurantDashboard");
+            router.replace("/restaurant/restaurantDashboard");
           } else if (response.status === 404) {
-            router.replace("/(restaurant)/createRestaurant");
+            router.replace("/restaurant/createRestaurant");
           } else {
             const errorData = await response.json().catch(() => ({}));
             throw new Error(

@@ -1,8 +1,4 @@
-import React, {
-  useCallback,
-  useState,
-  type ComponentProps,
-} from "react";
+import React, { useCallback, useState, type ComponentProps } from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -261,8 +257,7 @@ const AdminDashboard = () => {
       },
     ]);
   };
-  
-  
+
   const searchWords = query.trim().toLowerCase().split(/\s+/).filter(Boolean);
 
   const matchesSearch = (text: string) => {
@@ -325,7 +320,7 @@ const AdminDashboard = () => {
           tint="#2563EB"
           onPress={() =>
             router.push({
-              pathname: "/(admin)/allUsers",
+              pathname: "/admin/allUsers",
               params: { label: "customer" },
             })
           }
@@ -337,7 +332,7 @@ const AdminDashboard = () => {
           tint="#7C3AED"
           onPress={() =>
             router.push({
-              pathname: "/(admin)/allUsers",
+              pathname: "/admin/allUsers",
               params: { label: "restaurant" },
             })
           }
@@ -347,14 +342,14 @@ const AdminDashboard = () => {
           value={stats?.restaurants ?? 0}
           icon="restaurant"
           tint="#0B7A5A"
-          onPress={() => router.push("/(admin)/restaurants")}
+          onPress={() => router.push("/admin/restaurants")}
         />
         <StatCard
           label="Total bookings"
           value={stats?.bookings.total ?? 0}
           icon="calendar"
           tint="#0891B2"
-          onPress={() => router.push("/(admin)/allBookings")}
+          onPress={() => router.push("/admin/allBookings")}
         />
         <StatCard
           label="Pending"
@@ -363,7 +358,7 @@ const AdminDashboard = () => {
           tint="#D97706"
           onPress={() =>
             router.push({
-              pathname: "/(admin)/allBookings",
+              pathname: "/admin/allBookings",
               params: { label: "pending" },
             })
           }
@@ -375,7 +370,7 @@ const AdminDashboard = () => {
           tint="#16A34A"
           onPress={() =>
             router.push({
-              pathname: "/(admin)/allBookings",
+              pathname: "/admin/allBookings",
               params: { label: "confirmed" },
             })
           }
@@ -385,7 +380,7 @@ const AdminDashboard = () => {
           value={1}
           icon="restaurant"
           tint="#D97706"
-          onPress={() => router.push("/(restaurant)/restaurantDashboard")}
+          onPress={() => router.push("/restaurant/restaurantDashboard")}
         />
       </View>
 
