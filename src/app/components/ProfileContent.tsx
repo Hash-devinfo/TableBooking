@@ -22,6 +22,7 @@ type Profile = {
   address?: string;
   phone?: string;
   email?: string;
+  avatar?: string;
 };
 
 type Props = {
