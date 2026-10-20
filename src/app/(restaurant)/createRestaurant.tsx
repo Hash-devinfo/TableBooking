@@ -24,180 +24,6 @@ const FLOOR_SUGGESTIONS = [
   "Rooftop",
 ];
 
-const formatTime = (d: Date) => {
-  const h = d.getHours();
-  const period = h >= 12 ? "PM" : "AM";
-  return `${h % 12 || 12}:${String(d.getMinutes()).padStart(2, "0")} ${period}`;
-};
-
-const Field = ({
-  label,
-  required,
-  ...props
-}: TextInputProps & { label: string; required?: boolean }) => (
-  <View className="mb-4">
-    <Text className="mb-1 text-sm font-semibold text-gray-700">
-      {label}
-      {required ? <Text className="text-red-500"> *</Text> : null}
-    </Text>
-    <TextInput
-      placeholderTextColor="#9ca3af"
-      className="rounded-lg border border-blue-300 px-3 py-3 text-base text-gray-900"
-      {...props}
-    />
-  </View>
-);
-
-const TimeField = ({
-  label,
-  value,
-  onChange,
-}: {
-  label: string;
-  value: string;
-  onChange: (v: string) => void;
-}) => {
-  const [show, setShow] = useState(false);
-
-  return (
-    <View className="flex-1">
-      <Text className="mb-1 text-sm font-semibold text-gray-700">
-        {label}
-        <Text className="text-red-500"> *</Text>
-      </Text>
-      <Pressable
-        onPress={() => setShow(true)}
-        className="flex-row items-center justify-between rounded-lg border border-blue-300 px-3 py-3">
-        <Text className={value ? "text-gray-900" : "text-gray-400"}>
-          {value || "Select time"}
-        </Text>
-        <Ionicons name="time-outline" size={18} color="#2563EB" />
-      </Pressable>
-
-      {show && (
-        <DateTimePicker
-          value={new Date()}
-          mode="time"
-          is24Hour={false}
-          onChange={(event, date) => {
-            if (Platform.OS !== "ios") setShow(false);
-            if (event.type !== "dismissed" && date) onChange(formatTime(date));
-          }}
-        />
-      )}
-      {show && Platform.OS === "ios" && (
-        <Pressable onPress={() => setShow(false)} className="mt-1 self-end">
-          <Text className="font-semibold text-blue-700">Done</Text>
-        </Pressable>
-      )}
-    </View>
-  );
-};
-
-// Add / remove a list of short strings (floors, image links)
-const StringListInput = ({
-  label,
-  required,
-  placeholder,
-  items,
-  onChange,
-  suggestions = [],
-  validate,
-  keyboardType,
-}: {
-  label: string;
-  required?: boolean;
-  placeholder: string;
-  items: string[];
-  onChange: (items: string[]) => void;
-  suggestions?: string[];
-  validate?: (value: string) => string | null;
-  keyboardType?: TextInputProps["keyboardType"];
-}) => {
-  const [text, setText] = useState("");
-
-  const add = (raw: string) => {
-    const value = raw.trim();
-    if (!value) return;
-
-    const problem = validate?.(value);
-    if (problem) {
-      Alert.alert("Check this value", problem);
-      return;
-    }
-    if (items.includes(value)) return;
-
-    onChange([...items, value]);
-    setText("");
-  };
-
-  return (
-    <View className="mb-4">
-      <Text className="mb-1 text-sm font-semibold text-gray-700">{label}</Text>
-
-      <View className="flex-row items-center">
-        <TextInput
-          value={text}
-          onChangeText={setText}
-          onSubmitEditing={() => add(text)}
-          placeholder={placeholder}
-          placeholderTextColor="#9ca3af"
-          autoCapitalize="none"
-          keyboardType={keyboardType}
-          returnKeyType="done"
-          className="flex-1 rounded-lg border border-blue-300 px-3 py-3 text-base text-gray-900"
-        />
-        <Pressable
-          onPress={() => add(text)}
-          accessibilityRole="button"
-          accessibilityLabel={`Add ${label}`}
-          className="ml-2 h-12 w-12 items-center justify-center rounded-lg bg-blue-700">
-          <Ionicons name="add" size={24} color="white" />
-        </Pressable>
-      </View>
-
-      {suggestions.length > 0 && (
-        <View className="mt-2 flex-row flex-wrap">
-          {suggestions
-            .filter((s) => !items.includes(s))
-            .map((s) => (
-              <Pressable
-                key={s}
-                onPress={() => add(s)}
-                className="mb-2 mr-2 rounded-full border border-gray-300 bg-gray-50 px-3 py-1">
-                <Text className="text-sm text-gray-600">+ {s}</Text>
-              </Pressable>
-            ))}
-        </View>
-      )}
-
-      {items.length > 0 && (
-        <View className="mt-2 flex-row flex-wrap">
-          {items.map((item) => (
-            <View
-              key={item}
-              className="mb-2 mr-2 flex-row items-center rounded-full bg-blue-100 px-3 py-1">
-              <Text
-                numberOfLines={1}
-                className="max-w-[220px] text-sm text-blue-800">
-                {item}
-              </Text>
-              <Pressable
-                onPress={() => onChange(items.filter((i) => i !== item))}
-                hitSlop={8}
-                accessibilityRole="button"
-                accessibilityLabel={`Remove ${item}`}
-                className="ml-2">
-                <Ionicons name="close-circle" size={16} color="#1d4ed8" />
-              </Pressable>
-            </View>
-          ))}
-        </View>
-      )}
-    </View>
-  );
-};
-
 const emptyForm = {
   name: "",
   cuisines: "",
@@ -215,42 +41,60 @@ export default function CreateRestaurant() {
   const [form, setForm] = useState(emptyForm);
   const [seatingTypes, setSeatingTypes] = useState<string[]>([]);
   const [floors, setFloors] = useState<string[]>([]);
-
   const [images, setImages] = useState<string[]>([]);
   const [submitting, setSubmitting] = useState(false);
-
+  const [showErrors, setShowErrors] = useState(false);
   const set = (key: keyof typeof emptyForm) => (value: string) =>
     setForm((f) => ({ ...f, [key]: value }));
+  const [seatingText, setSeatingText] = useState("");
+  const [floorText, setFloorText] = useState("");
+  const [showOpeningPicker, setShowOpeningPicker] = useState(false);
+  const [showClosingPicker, setShowClosingPicker] = useState(false);
 
-  const toggleSeating = (type: string) =>
-    setSeatingTypes((cur) =>
-      cur.includes(type) ? cur.filter((t) => t !== type) : [...cur, type],
-    );
+  const formatTime = (date: Date) => {
+    const hours = date.getHours();
+    const period = hours >= 12 ? "PM" : "AM";
+    return `${hours % 12 || 12}:${String(date.getMinutes()).padStart(2, "0")} ${period}`;
+  };
+  const addItem = (
+    text: string,
+    items: string[],
+    setItems: React.Dispatch<React.SetStateAction<string[]>>,
+    clearText: (value: string) => void,
+  ) => {
+    const value = text.trim();
 
-  const validate = (): string | null => {
-    if (!form.name.trim()) return "Enter the restaurant name.";
-    if (!form.cuisines.trim()) return "Enter at least one cuisine.";
-    if (!form.city.trim()) return "Enter the city.";
-    if (!form.address.trim()) return "Enter the address.";
-    if (form.phone.trim().length < 7) return "Enter a valid phone number.";
-    if (!form.openingTime || !form.closingTime)
-      return "Select the opening and closing times.";
+    if (!value || items.includes(value)) return;
 
-    const seats = Number(form.availableSeats);
-    if (!Number.isInteger(seats) || seats < 1)
-      return "Available seats must be a whole number of at least 1.";
-
-    if (seatingTypes.length === 0) return "Choose at least one seating type.";
-    if (floors.length === 0) return "Add at least one floor.";
-    return null;
+    setItems((current) => [...current, value]);
+    clearText("");
   };
 
+  const validate = () => ({
+    name: !form.name.trim() ? "Enter the restaurant name." : "",
+    cuisines: !form.cuisines.trim() ? "Enter at least one cuisine." : "",
+    city: !form.city.trim() ? "Enter the city." : "",
+    province: !form.province.trim() ? "Enter the province." : "",
+    address: !form.address.trim() ? "Enter the address." : "",
+    phone: form.phone.trim().length < 7 ? "Enter a valid phone number." : "",
+    openingTime: !form.openingTime ? "Select an opening time." : "",
+    closingTime: !form.closingTime ? "Select a closing time." : "",
+    availableSeats:
+      !Number.isInteger(Number(form.availableSeats)) ||
+      Number(form.availableSeats) < 1
+        ? "Available seats must be a whole number of at least 1."
+        : "",
+    seatingTypes:
+      seatingTypes.length === 0 ? "Choose at least one seating type." : "",
+    floors: floors.length === 0 ? "Add at least one floor." : "",
+  });
+  const errors = validate();
   const handleSubmit = async () => {
     const problem = validate();
-    if (problem) {
-      Alert.alert("Missing information", problem);
-      return;
-    }
+    setShowErrors(true);
+
+    const errors = validate();
+    if (Object.values(errors).some(Boolean)) return;
 
     try {
       setSubmitting(true);
@@ -320,6 +164,9 @@ export default function CreateRestaurant() {
           className="rounded-lg border border-blue-300 px-3 py-3 text-base text-gray-900"
           onChangeText={set("name")}
         />
+        {showErrors && errors.name ? (
+          <Text className="mb-3 mt-1 text-sm text-red-600">{errors.name}</Text>
+        ) : null}
         <Text className="mb-1 text-sm font-semibold text-gray-700">
           Cuisines
         </Text>
@@ -330,6 +177,11 @@ export default function CreateRestaurant() {
           className="rounded-lg border border-blue-300 px-3 py-3 text-base text-gray-900"
           onChangeText={set("cuisines")}
         />
+        {showErrors && errors.cuisines ? (
+          <Text className="mb-3 mt-1 text-sm text-red-600">
+            {errors.cuisines}
+          </Text>
+        ) : null}
         <Text className="mb-1 text-sm font-semibold text-gray-700">
           Description
         </Text>
@@ -343,107 +195,329 @@ export default function CreateRestaurant() {
           textAlignVertical="top"
           style={{ minHeight: 100 }}
         />
-
-        
-        
         <Text className="mb-3 mt-6 text-xl font-bold text-blue-700">
           Location & contact
         </Text>
-
-        <Field
-          label="City"
-          required
+        <Text className="mb-1 text-sm font-semibold text-gray-700">City</Text>
+        <TextInput
           value={form.city}
-          onChangeText={set("city")}
           placeholder="e.g. Lahore"
+          placeholderTextColor="#9ca3af"
+          className="rounded-lg border border-blue-300 px-3 py-3 text-base text-gray-900"
+          onChangeText={set("city")}
         />
-        <Field
-          label="Province"
+        {showErrors && errors.city ? (
+          <Text className="mb-3 mt-1 text-sm text-red-600">{errors.city}</Text>
+        ) : null}
+        <Text className="mb-1 text-sm font-semibold text-gray-700">
+          Province
+        </Text>
+        <TextInput
           value={form.province}
-          onChangeText={set("province")}
           placeholder="e.g. Punjab"
+          placeholderTextColor="#9ca3af"
+          className="rounded-lg border border-blue-300 px-3 py-3 text-base text-gray-900"
+          onChangeText={set("province")}
         />
-        <Field
-          label="Address"
-          required
+        {showErrors && errors.province ? (
+          <Text className="mb-3 mt-1 text-sm text-red-600">
+            {errors.province}
+          </Text>
+        ) : null}
+        <Text className="mb-1 text-sm font-semibold text-gray-700">
+          Address
+        </Text>
+        <TextInput
           value={form.address}
-          onChangeText={set("address")}
           placeholder="Street, area"
+          placeholderTextColor="#9ca3af"
+          className="rounded-lg border border-blue-300 px-3 py-3 text-base text-gray-900"
+          onChangeText={set("address")}
         />
-        <Field
-          label="Phone"
-          required
+        {showErrors && errors.address ? (
+          <Text className="mb-3 mt-1 text-sm text-red-600">
+            {errors.address}
+          </Text>
+        ) : null}
+        <Text className="mb-1 text-sm font-semibold text-gray-700">Phone</Text>
+        <TextInput
           value={form.phone}
-          onChangeText={set("phone")}
           placeholder="+92 300 1234567"
+          placeholderTextColor="#9ca3af"
+          className="rounded-lg border border-blue-300 px-3 py-3 text-base text-gray-900"
+          onChangeText={set("phone")}
           keyboardType="phone-pad"
         />
+        {showErrors && errors.phone ? (
+          <Text className="mb-3 mt-1 text-sm text-red-600">{errors.phone}</Text>
+        ) : null}
         <Text className="mb-3 mt-6 text-xl font-bold text-blue-700">
           Opening hours
         </Text>
-
         <View className="mb-4 flex-row gap-3">
-          <TimeField
-            label="Opens"
-            value={form.openingTime}
-            onChange={set("openingTime")}
-          />
-          <TimeField
-            label="Closes"
-            value={form.closingTime}
-            onChange={set("closingTime")}
-          />
+          {/* Opens */}
+          <View className="flex-1">
+            <Text className="mb-1 text-sm font-semibold text-gray-700">
+              Opens<Text className="text-red-500"> *</Text>
+            </Text>
+            {showErrors && errors.openingTime ? (
+              <Text className="mb-3 mt-1 text-sm text-red-600">
+                {errors.openingTime}
+              </Text>
+            ) : null}
+            <Pressable
+              onPress={() => setShowOpeningPicker(true)}
+              className="flex-row items-center justify-between rounded-lg border border-blue-300 px-3 py-3">
+              <Text
+                className={
+                  form.openingTime ? "text-gray-900" : "text-gray-400"
+                }>
+                {form.openingTime || "Select time"}
+              </Text>
+              <Ionicons name="time-outline" size={18} color="#2563EB" />
+            </Pressable>
+
+            {showOpeningPicker && (
+              <DateTimePicker
+                value={new Date()}
+                mode="time"
+                is24Hour={false}
+                onChange={(event, date) => {
+                  if (Platform.OS !== "ios") setShowOpeningPicker(false);
+                  if (event.type !== "dismissed" && date) {
+                    set("openingTime")(formatTime(date));
+                  }
+                }}
+              />
+            )}
+
+            {showOpeningPicker && Platform.OS === "ios" && (
+              <Pressable
+                onPress={() => setShowOpeningPicker(false)}
+                className="mt-1 self-end">
+                <Text className="font-semibold text-blue-700">Done</Text>
+              </Pressable>
+            )}
+          </View>
+
+          {/* Closes */}
+          <View className="flex-1">
+            <Text className="mb-1 text-sm font-semibold text-gray-700">
+              Closes<Text className="text-red-500"> *</Text>
+            </Text>
+              {showErrors && errors.closingTime ? (
+              <Text className="mb-3 mt-1 text-sm text-red-600">
+                {errors.closingTime}
+              </Text>
+            ) : null}
+            <Pressable
+              onPress={() => setShowClosingPicker(true)}
+              className="flex-row items-center justify-between rounded-lg border border-blue-300 px-3 py-3">
+              <Text
+                className={
+                  form.closingTime ? "text-gray-900" : "text-gray-400"
+                }>
+                {form.closingTime || "Select time"}
+              </Text>
+              <Ionicons name="time-outline" size={18} color="#2563EB" />
+            </Pressable>
+
+            {showClosingPicker && (
+              <DateTimePicker
+                value={new Date()}
+                mode="time"
+                is24Hour={false}
+                onChange={(event, date) => {
+                  if (Platform.OS !== "ios") setShowClosingPicker(false);
+                  if (event.type !== "dismissed" && date) {
+                    set("closingTime")(formatTime(date));
+                  }
+                }}
+              />
+            )}
+
+            {showClosingPicker && Platform.OS === "ios" && (
+              <Pressable
+                onPress={() => setShowClosingPicker(false)}
+                className="mt-1 self-end">
+                <Text className="font-semibold text-blue-700">Done</Text>
+              </Pressable>
+            )}
+          </View>
         </View>
+
         <Text className="mb-3 mt-6 text-xl font-bold text-blue-700">
           Seating
         </Text>
-
-        <Field
-          label="Total available seats"
-          required
+        <Text className="mb-1 text-sm font-semibold text-gray-700">
+          Total available seats
+        </Text>
+        <TextInput
           value={form.availableSeats}
-          onChangeText={set("availableSeats")}
           placeholder="e.g. 40"
+          placeholderTextColor="#9ca3af"
+          className="rounded-lg border border-blue-300 px-3 py-3 text-base text-gray-900"
+          onChangeText={set("availableSeats")}
           keyboardType="number-pad"
         />
+        {showErrors && errors.availableSeats ? (
+          <Text className="mb-3 mt-1 text-sm text-red-600">
+            {errors.availableSeats}
+          </Text>
+        ) : null}
+        {/* Seating types */}
+        <View className="mb-2 mt-2">
+          <Text className="mb-1 text-sm font-semibold text-gray-700">
+            Seating types
+          </Text>
 
-        <StringListInput
-          label="Seating types"
-          required
-          placeholder="Add a seating type, e.g. Terrace"
-          items={seatingTypes}
-          onChange={setSeatingTypes}
-          suggestions={SEATING_OPTIONS}
-        />
+          <View className="flex-row items-center">
+            <TextInput
+              value={seatingText}
+              onChangeText={setSeatingText}
+              onSubmitEditing={() =>
+                addItem(
+                  seatingText,
+                  seatingTypes,
+                  setSeatingTypes,
+                  setSeatingText,
+                )
+              }
+              placeholder="Add a seating type, e.g. Terrace"
+              placeholderTextColor="#9ca3af"
+              returnKeyType="done"
+              className="flex-1 rounded-lg border border-blue-300 px-3 py-3 text-base text-gray-900"
+            />
+            {showErrors && errors.seatingTypes ? (
+              <Text className="mb-3 mt-1 text-sm text-red-600">
+                {errors.seatingTypes}
+              </Text>
+            ) : null}
+            <Pressable
+              onPress={() =>
+                addItem(
+                  seatingText,
+                  seatingTypes,
+                  setSeatingTypes,
+                  setSeatingText,
+                )
+              }
+              accessibilityRole="button"
+              accessibilityLabel="Add seating type"
+              className="ml-2 h-12 w-12 items-center justify-center rounded-lg bg-blue-700">
+              <Ionicons name="add" size={24} color="white" />
+            </Pressable>
+          </View>
 
-        <StringListInput
-          label="Floors"
-          placeholder="Add a floor, e.g. Rooftop"
-          items={floors}
-          onChange={setFloors}
-          suggestions={FLOOR_SUGGESTIONS}
-        />
+          <View className="mt-2 flex-row flex-wrap">
+            {SEATING_OPTIONS.filter(
+              (option) => !seatingTypes.includes(option),
+            ).map((option) => (
+              <Pressable
+                key={option}
+                onPress={() =>
+                  addItem(option, seatingTypes, setSeatingTypes, setSeatingText)
+                }
+                className="mb-2 mr-2 rounded-full border border-gray-300 bg-gray-50 px-3 py-1">
+                <Text className="text-sm text-gray-600">+ {option}</Text>
+              </Pressable>
+            ))}
+          </View>
+
+          <View className="mt-2 flex-row flex-wrap">
+            {seatingTypes.map((type) => (
+              <View
+                key={type}
+                className="mb-2 mr-2 flex-row items-center rounded-full bg-blue-100 px-3 py-1">
+                <Text className="text-sm text-blue-800">{type}</Text>
+                <Pressable
+                  onPress={() =>
+                    setSeatingTypes((current) =>
+                      current.filter((item) => item !== type),
+                    )
+                  }
+                  accessibilityRole="button"
+                  accessibilityLabel={`Remove ${type}`}
+                  className="ml-2">
+                  <Ionicons name="close-circle" size={16} color="#1d4ed8" />
+                </Pressable>
+              </View>
+            ))}
+          </View>
+        </View>
+        {/* Floors */}
+        <View className="mb-2">
+          <Text className="mb-1 text-sm font-semibold text-gray-700">
+            Floors
+          </Text>
+
+          <View className="flex-row items-center">
+            <TextInput
+              value={floorText}
+              onChangeText={setFloorText}
+              onSubmitEditing={() =>
+                addItem(floorText, floors, setFloors, setFloorText)
+              }
+              placeholder="Add a floor, e.g. Rooftop"
+              placeholderTextColor="#9ca3af"
+              returnKeyType="done"
+              className="flex-1 rounded-lg border border-blue-300 px-3 py-3 text-base text-gray-900"
+            />
+            {showErrors && errors.floors ? (
+              <Text className="mb-3 mt-1 text-sm text-red-600">
+                {errors.floors}
+              </Text>
+            ) : null}
+            <Pressable
+              onPress={() =>
+                addItem(floorText, floors, setFloors, setFloorText)
+              }
+              accessibilityRole="button"
+              accessibilityLabel="Add floor"
+              className="ml-2 h-12 w-12 items-center justify-center rounded-lg bg-blue-700">
+              <Ionicons name="add" size={24} color="white" />
+            </Pressable>
+          </View>
+
+          <View className="mt-2 flex-row flex-wrap">
+            {FLOOR_SUGGESTIONS.filter((floor) => !floors.includes(floor)).map(
+              (floor) => (
+                <Pressable
+                  key={floor}
+                  onPress={() =>
+                    addItem(floor, floors, setFloors, setFloorText)
+                  }
+                  className="mb-2 mr-2 rounded-full border border-gray-300 bg-gray-50 px-3 py-1">
+                  <Text className="text-sm text-gray-600">+ {floor}</Text>
+                </Pressable>
+              ),
+            )}
+          </View>
+
+          <View className="mt-2 flex-row flex-wrap">
+            {floors.map((floor) => (
+              <View
+                key={floor}
+                className="mb-2 mr-2 flex-row items-center rounded-full bg-blue-100 px-3 py-1">
+                <Text className="text-sm text-blue-800">{floor}</Text>
+                <Pressable
+                  onPress={() =>
+                    setFloors((current) =>
+                      current.filter((item) => item !== floor),
+                    )
+                  }
+                  accessibilityRole="button"
+                  accessibilityLabel={`Remove ${floor}`}
+                  className="ml-2">
+                  <Ionicons name="close-circle" size={16} color="#1d4ed8" />
+                </Pressable>
+              </View>
+            ))}
+          </View>
+        </View>
         <Text className="mb-3 mt-6 text-xl font-bold text-blue-700">
           Photos
         </Text>
-
-        <StringListInput
-          label="Image links"
-          placeholder="https://..."
-          items={images}
-          onChange={setImages}
-          keyboardType="url"
-          validate={(v) =>
-            /^https?:\/\//i.test(v)
-              ? null
-              : "Image links must start with http:// or https://"
-          }
-        />
-        <Text className="-mt-2 mb-2 text-xs text-gray-500">
-          Use direct links to the picture itself. The first image is shown on
-          your restaurant's card.
-        </Text>
-
         <Pressable
           onPress={handleSubmit}
           disabled={submitting}
