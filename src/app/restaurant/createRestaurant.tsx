@@ -52,6 +52,10 @@ export default function CreateRestaurant() {
   const [showOpeningPicker, setShowOpeningPicker] = useState(false);
   const [showClosingPicker, setShowClosingPicker] = useState(false);
 
+  const goBack = () => {
+    if (router.canGoBack()) router.back();
+  };
+
   const formatTime = (date: Date) => {
     const hours = date.getHours();
     const period = hours >= 12 ? "PM" : "AM";
@@ -91,7 +95,6 @@ export default function CreateRestaurant() {
   });
   const errors = validate();
   const handleSubmit = async () => {
-    
     setShowErrors(true);
 
     const errors = validate();
@@ -148,6 +151,15 @@ export default function CreateRestaurant() {
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: 48 }}>
         <View className="flex-row items-center">
+          <Pressable
+            onPress={goBack}
+            disabled={!goBack}
+            hitSlop={8}
+            accessibilityRole="button"
+            accessibilityLabel="Go back"
+            className="mr-3 h-10 w-10 items-center justify-center rounded-full bg-blue-50">
+            <Ionicons name="arrow-back" size={22} color="#2563EB" />
+          </Pressable>
           <Text className="flex-1 text-2xl font-bold text-blue-900">
             Create Your Restaurant
           </Text>
