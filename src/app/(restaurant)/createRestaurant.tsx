@@ -24,57 +24,7 @@ const FLOOR_SUGGESTIONS = [
   "Rooftop",
 ];
 
-const formatTime = (d: Date) => {
-  const h = d.getHours();
-  const period = h >= 12 ? "PM" : "AM";
-  return `${h % 12 || 12}:${String(d.getMinutes()).padStart(2, "0")} ${period}`;
-};
 
-const TimeField = ({
-  label,
-  value,
-  onChange,
-}: {
-  label: string;
-  value: string;
-  onChange: (v: string) => void;
-}) => {
-  const [show, setShow] = useState(false);
-
-  return (
-    <View className="flex-1">
-      <Text className="mb-1 text-sm font-semibold text-gray-700">
-        {label}
-        <Text className="text-red-500"> *</Text>
-      </Text>
-      <Pressable
-        onPress={() => setShow(true)}
-        className="flex-row items-center justify-between rounded-lg border border-blue-300 px-3 py-3">
-        <Text className={value ? "text-gray-900" : "text-gray-400"}>
-          {value || "Select time"}
-        </Text>
-        <Ionicons name="time-outline" size={18} color="#2563EB" />
-      </Pressable>
-
-      {show && (
-        <DateTimePicker
-          value={new Date()}
-          mode="time"
-          is24Hour={false}
-          onChange={(event, date) => {
-            if (Platform.OS !== "ios") setShow(false);
-            if (event.type !== "dismissed" && date) onChange(formatTime(date));
-          }}
-        />
-      )}
-      {show && Platform.OS === "ios" && (
-        <Pressable onPress={() => setShow(false)} className="mt-1 self-end">
-          <Text className="font-semibold text-blue-700">Done</Text>
-        </Pressable>
-      )}
-    </View>
-  );
-};
 
 const emptyForm = {
   name: "",
@@ -93,7 +43,6 @@ export default function CreateRestaurant() {
   const [form, setForm] = useState(emptyForm);
   const [seatingTypes, setSeatingTypes] = useState<string[]>([]);
   const [floors, setFloors] = useState<string[]>([]);
-
   const [images, setImages] = useState<string[]>([]);
   const [submitting, setSubmitting] = useState(false);
   const [showErrors, setShowErrors] = useState(false);
@@ -101,7 +50,14 @@ export default function CreateRestaurant() {
     setForm((f) => ({ ...f, [key]: value }));
   const [seatingText, setSeatingText] = useState("");
   const [floorText, setFloorText] = useState("");
+  const [showOpeningPicker, setShowOpeningPicker] = useState(false);
+  const [showClosingPicker, setShowClosingPicker] = useState(false);
 
+  const formatTime = (date: Date) => {
+    const hours = date.getHours();
+    const period = hours >= 12 ? "PM" : "AM";
+    return `${hours % 12 || 12}:${String(date.getMinutes()).padStart(2, "0")} ${period}`;
+  };
   const addItem = (
     text: string,
     items: string[],
@@ -241,7 +197,6 @@ export default function CreateRestaurant() {
           textAlignVertical="top"
           style={{ minHeight: 100 }}
         />
-
         <Text className="mb-3 mt-6 text-xl font-bold text-blue-700">
           Location & contact
         </Text>
@@ -301,19 +256,90 @@ export default function CreateRestaurant() {
         <Text className="mb-3 mt-6 text-xl font-bold text-blue-700">
           Opening hours
         </Text>
-
         <View className="mb-4 flex-row gap-3">
-          <TimeField
-            label="Opens"
-            value={form.openingTime}
-            onChange={set("openingTime")}
-          />
-          <TimeField
-            label="Closes"
-            value={form.closingTime}
-            onChange={set("closingTime")}
-          />
+          {/* Opens */}
+          <View className="flex-1">
+            <Text className="mb-1 text-sm font-semibold text-gray-700">
+              Opens<Text className="text-red-500"> *</Text>
+            </Text>
+
+            <Pressable
+              onPress={() => setShowOpeningPicker(true)}
+              className="flex-row items-center justify-between rounded-lg border border-blue-300 px-3 py-3">
+              <Text
+                className={
+                  form.openingTime ? "text-gray-900" : "text-gray-400"
+                }>
+                {form.openingTime || "Select time"}
+              </Text>
+              <Ionicons name="time-outline" size={18} color="#2563EB" />
+            </Pressable>
+
+            {showOpeningPicker && (
+              <DateTimePicker
+                value={new Date()}
+                mode="time"
+                is24Hour={false}
+                onChange={(event, date) => {
+                  if (Platform.OS !== "ios") setShowOpeningPicker(false);
+                  if (event.type !== "dismissed" && date) {
+                    set("openingTime")(formatTime(date));
+                  }
+                }}
+              />
+            )}
+
+            {showOpeningPicker && Platform.OS === "ios" && (
+              <Pressable
+                onPress={() => setShowOpeningPicker(false)}
+                className="mt-1 self-end">
+                <Text className="font-semibold text-blue-700">Done</Text>
+              </Pressable>
+            )}
+          </View>
+
+          {/* Closes */}
+          <View className="flex-1">
+            <Text className="mb-1 text-sm font-semibold text-gray-700">
+              Closes<Text className="text-red-500"> *</Text>
+            </Text>
+
+            <Pressable
+              onPress={() => setShowClosingPicker(true)}
+              className="flex-row items-center justify-between rounded-lg border border-blue-300 px-3 py-3">
+              <Text
+                className={
+                  form.closingTime ? "text-gray-900" : "text-gray-400"
+                }>
+                {form.closingTime || "Select time"}
+              </Text>
+              <Ionicons name="time-outline" size={18} color="#2563EB" />
+            </Pressable>
+
+            {showClosingPicker && (
+              <DateTimePicker
+                value={new Date()}
+                mode="time"
+                is24Hour={false}
+                onChange={(event, date) => {
+                  if (Platform.OS !== "ios") setShowClosingPicker(false);
+                  if (event.type !== "dismissed" && date) {
+                    set("closingTime")(formatTime(date));
+                  }
+                }}
+              />
+            )}
+
+            {showClosingPicker && Platform.OS === "ios" && (
+              <Pressable
+                onPress={() => setShowClosingPicker(false)}
+                className="mt-1 self-end">
+                <Text className="font-semibold text-blue-700">Done</Text>
+              </Pressable>
+            )}
+          </View>
         </View>
+        
         <Text className="mb-3 mt-6 text-xl font-bold text-blue-700">
           Seating
         </Text>
@@ -333,7 +359,6 @@ export default function CreateRestaurant() {
             {errors.availableSeats}
           </Text>
         ) : null}
-
         {/* Seating types */}
         <View className="mb-2 mt-2">
           <Text className="mb-1 text-sm font-semibold text-gray-700">
@@ -357,7 +382,7 @@ export default function CreateRestaurant() {
               returnKeyType="done"
               className="flex-1 rounded-lg border border-blue-300 px-3 py-3 text-base text-gray-900"
             />
-            {showErrors && errors.name ? (
+            {showErrors && errors.seatingTypes ? (
               <Text className="mb-3 mt-1 text-sm text-red-600">
                 {errors.seatingTypes}
               </Text>
@@ -414,7 +439,6 @@ export default function CreateRestaurant() {
             ))}
           </View>
         </View>
-
         {/* Floors */}
         <View className="mb-2">
           <Text className="mb-1 text-sm font-semibold text-gray-700">
@@ -433,7 +457,7 @@ export default function CreateRestaurant() {
               returnKeyType="done"
               className="flex-1 rounded-lg border border-blue-300 px-3 py-3 text-base text-gray-900"
             />
-            {showErrors && errors.name ? (
+            {showErrors && errors.floors ? (
               <Text className="mb-3 mt-1 text-sm text-red-600">
                 {errors.floors}
               </Text>
@@ -485,11 +509,9 @@ export default function CreateRestaurant() {
             ))}
           </View>
         </View>
-
         <Text className="mb-3 mt-6 text-xl font-bold text-blue-700">
           Photos
         </Text>
-
         <Pressable
           onPress={handleSubmit}
           disabled={submitting}
