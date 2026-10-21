@@ -21,7 +21,7 @@ export default function AvatarPicker({
       allowsEditing: true,
       aspect: [1, 1],
       quality: 0.7,
-    });
+    }); 
     if (result.canceled) return;
 
     const asset = result.assets[0];
