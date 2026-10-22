@@ -1,10 +1,10 @@
-import type { Request, Response } from "express";
 import bcrypt from "bcrypt";
+import type { Request, Response } from "express";
 import jwt from "jsonwebtoken";
-import User from "../models/User.js";
+import type { AuthRequest } from "../middleware/authMiddleware.js";
 import Booking from "../models/Booking.js";
 import Restaurant from "../models/Restaurant.js";
-import type { AuthRequest } from "../middleware/authMiddleware.js";
+import User from "../models/User.js";
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const PAKISTANI_PHONE_REGEX = /^03\d{9}$/;
@@ -207,7 +207,6 @@ export const updateAccount = async (req: AuthRequest, res: Response) => {
       phone,
       address,
       dob,
-      email,
       currentPassword,
       newPassword,
       avatar,
@@ -247,24 +246,14 @@ export const updateAccount = async (req: AuthRequest, res: Response) => {
       user.dob = date;
     }
 
-    const changingEmail =
-      email !== undefined && String(email).trim().toLowerCase() !== user.email;
     const changingPassword = newPassword !== undefined;
 
-    if (changingEmail || changingPassword) {
+    if (changingPassword) {
       if (!currentPassword || !(await user.comparePassword(currentPassword))) {
         return res
           .status(401)
           .json({ message: "Current password is incorrect" });
       }
-    }
-
-    if (changingEmail) {
-      const nextEmail = String(email).trim().toLowerCase();
-      if (!/^\S+@\S+\.\S+$/.test(nextEmail)) {
-        return res.status(400).json({ message: "Invalid email address" });
-      }
-      user.email = nextEmail;
     }
 
     if (changingPassword) {
