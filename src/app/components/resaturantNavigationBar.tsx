@@ -9,7 +9,7 @@ type Tab = { name: string; icon: IconName; route: Href };
 
 const DEFAULT_TABS: Tab[] = [
   {
-    name: "My Bookings Khuram",
+    name: "My Bookings",
     icon: "calendar-month",
     route: "/restaurant/restaurantDashboard",
   },
