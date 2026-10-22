@@ -1,20 +1,21 @@
-import {
-  View,
-  Text,
-  Pressable,
-  Image,
-  ScrollView,
-  Alert,
-  Modal,
-  KeyboardAvoidingView,
-  Platform,
-} from "react-native";
-import React, { useCallback, useState } from "react";
-import { getMe, deleteMe, updateMe } from "../../api/authApi";
+import { Ionicons } from "@expo/vector-icons";
 import { router, useFocusEffect } from "expo-router";
 import * as SecureStore from "expo-secure-store";
+import { useCallback, useState } from "react";
+import {
+  Alert,
+  Image,
+  KeyboardAvoidingView,
+  Modal,
+  Platform,
+  Pressable,
+  ScrollView,
+  Text,
+  View,
+} from "react-native";
 import { ActivityIndicator, Button, TextInput } from "react-native-paper";
-import { Ionicons } from "@expo/vector-icons";
+import { deleteMe, getMe, updateMe } from "../../api/authApi";
+import AvatarPicker from "./AvatarPicker";
 
 type Profile = {
   firstName?: string;
@@ -68,14 +69,12 @@ const ProfileContent = ({ showFoodInterest = true }: Props) => {
   };
 
   const handleUpdate = async () => {
-    const emailChanged =
-      email.trim().toLowerCase() !== (profile?.email ?? "").toLowerCase();
     const passwordChanging = newPassword.length > 0;
 
-    if ((emailChanged || passwordChanging) && !currentPassword) {
+    if (passwordChanging && !currentPassword) {
       Alert.alert(
         "Current password required",
-        "Enter your current password to change your email or password.",
+        "Enter your current password to change your  password.",
       );
       return;
     }
@@ -101,8 +100,8 @@ const ProfileContent = ({ showFoodInterest = true }: Props) => {
         lastName: lastName.trim(),
         phone: phone.trim(),
         address: address.trim(),
-        email: email.trim(),
-        ...(emailChanged || passwordChanging ? { currentPassword } : {}),
+
+        ...(passwordChanging ? { currentPassword } : {}),
         ...(passwordChanging ? { newPassword } : {}),
       });
 
@@ -201,10 +200,17 @@ const ProfileContent = ({ showFoodInterest = true }: Props) => {
     <View className="flex-1 pt-16 justify-between bg-white ">
       <ScrollView className="px-4  mb-2">
         <View className="flex items-center mt-8 bg-gray-400 rounded-2xl">
-          <Image
-            source={require("../../../assets/images/user.png")}
-            className="mt-8 w-28 h-28 rounded-full border-2 border-blue-700"
-          />
+          <View className="flex mt-4">
+                  <AvatarPicker
+                    uri={profile?.avatar}
+                    onUploaded={async (url) => {
+                      const token = await SecureStore.getItemAsync("authToken");
+                      if (!token) return;
+                      await updateMe(token, { avatar: url });
+                      await loadProfile();
+                    }}
+                  />
+                </View>
 
           <View className="flex items-center mt-6">
             <Text className="text-2xl font-bold text-blue-700">
@@ -287,7 +293,6 @@ const ProfileContent = ({ showFoodInterest = true }: Props) => {
               <View
                 className="rounded-3xl bg-white p-6 shadow-2xl"
                 style={{ elevation: 6 }}>
-                {/* Header with Title & Close Icon */}
                 <View className="mb-5 flex-row items-center justify-between border-b border-gray-100 pb-3">
                   <View>
                     <Text className="text-xl font-extrabold text-blue-900">
@@ -305,6 +310,7 @@ const ProfileContent = ({ showFoodInterest = true }: Props) => {
                     <Ionicons name="close" size={18} color="#4B5563" />
                   </Pressable>
                 </View>
+                
 
                 {/* Inputs */}
                 <TextInput
@@ -312,7 +318,6 @@ const ProfileContent = ({ showFoodInterest = true }: Props) => {
                   value={firstName}
                   onChangeText={setFirstName}
                   style={{ marginBottom: 12 }}
-                  
                 />
                 <TextInput
                   label="Last name"
@@ -334,15 +339,7 @@ const ProfileContent = ({ showFoodInterest = true }: Props) => {
                   multiline
                   style={{ marginBottom: 12 }}
                 />
-                <TextInput
-                  label="Email"
-                  value={email}
-                  onChangeText={setEmail}
-                  keyboardType="email-address"
-                  autoCapitalize="none"
-                  autoCorrect={false}
-                  style={{ marginBottom: 12 }}
-                />
+
                 <TextInput
                   label="Current password"
                   value={currentPassword}
