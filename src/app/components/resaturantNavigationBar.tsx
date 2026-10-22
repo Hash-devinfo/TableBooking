@@ -11,12 +11,12 @@ const DEFAULT_TABS: Tab[] = [
   {
     name: "My Bookings",
     icon: "calendar-month",
-    route: "/(restaurant)/restaurantDashboard",
+    route: "/restaurant/restaurantDashboard",
   },
   {
     name: "Profile",
     icon: "account-circle",
-    route: "/(restaurant)/restaurantProfile",
+    route: "/restaurant/restaurantProfile",
   },
 ];
 
