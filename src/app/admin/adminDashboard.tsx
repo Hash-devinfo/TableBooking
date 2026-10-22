@@ -1,4 +1,7 @@
-import React, { useCallback, useState, type ComponentProps } from "react";
+import { Ionicons } from "@expo/vector-icons";
+import { router, useFocusEffect } from "expo-router";
+import * as SecureStore from "expo-secure-store";
+import { useCallback, useState, type ComponentProps } from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -9,9 +12,6 @@ import {
   TextInput,
   View,
 } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
-import { router, useFocusEffect } from "expo-router";
-import * as SecureStore from "expo-secure-store";
 import {
   getAdminBookings,
   getAdminRestaurants,
@@ -22,8 +22,8 @@ import {
   type AdminUser,
 } from "../../api/adminApi";
 import type { Booking } from "../../api/bookingApi";
-import { getBookingCode } from "../../utils/booking";
 import { getMyRestaurant, type Restaurant } from "../../api/restaurantApi";
+import { getBookingCode } from "../../utils/booking";
 
 type IconName = ComponentProps<typeof Ionicons>["name"];
 type Tab = "bookings" | "restaurants" | "users";
@@ -113,13 +113,15 @@ const StatCard = ({
     onPress={onPress}
     className="mb-3 w-[48%] rounded-2xl bg-white p-4"
     style={{ elevation: 2 }}>
-    <View
-      className="h-10 w-10 items-center justify-center rounded-full"
-      style={{ backgroundColor: `${tint}22` }}>
-      <Ionicons name={icon} size={20} color={tint} />
+    <View className="flex-row justify-between">
+      <View
+        className=" h-10 w-10 items-center justify-center rounded-full"
+        style={{ backgroundColor: `${tint}22` }}>
+        <Ionicons name={icon} size={20} color={tint} />
+      </View>
+      <Text className="mt-3 text-2xl font-bold text-gray-900">{value}</Text>
     </View>
-    <Text className="mt-3 text-2xl font-bold text-gray-900">{value}</Text>
-    <Text className="text-sm text-gray-500">{label}</Text>
+    <Text className="text-base font-semibold mt-6  text-gray-500">{label}</Text>
   </Pressable>
 );
 
