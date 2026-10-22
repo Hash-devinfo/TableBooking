@@ -1,5 +1,8 @@
+import { getAllRestaurants } from "@/api/restaurantApi";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
-import { router, Link, useFocusEffect } from "expo-router";
+import { Link, router, useFocusEffect } from "expo-router";
+import * as SecureStore from "expo-secure-store";
+import { useCallback, useState, type ComponentProps } from "react";
 import {
   Alert,
   FlatList,
@@ -9,16 +12,11 @@ import {
   Text,
   View,
 } from "react-native";
-import { Searchbar, ActivityIndicator } from "react-native-paper";
-import * as SecureStore from "expo-secure-store";
-import { useState, useEffect, type ComponentProps, useCallback } from "react";
-import { getAllRestaurants } from "@/api/restaurantApi";
-import { getFavorites, toggleFavorite } from "../api/favoritesApi";
+import { ActivityIndicator, Searchbar } from "react-native-paper";
 import { getMe } from "../api/authApi";
+import { getFavorites, toggleFavorite } from "../api/favoritesApi";
 import { resolveImageUrl } from "../api/restaurantApi";
 import NavigationBar from "./components/navigationBar";
-
-
 
 type Category = {
   label: string;
@@ -38,7 +36,7 @@ type Restaurant = {
   distance?: string;
 };
 
-type Profile = { lastName?: string; address?: string };
+type Profile = { lastName?: string; address?: string; avatar?: string };
 
 const Stars = ({ rating }: { rating: number }) => (
   <View className="flex-row items-center">
@@ -185,6 +183,7 @@ export default function Home() {
       setProfile({
         lastName: u?.lastName ?? u?.firstName,
         address: u?.address,
+        avatar: u?.avatar,
       });
     } catch (e) {
       console.log("Error loading profile:", e);
@@ -283,130 +282,73 @@ export default function Home() {
   }
 
   return (
-    
     <View className="flex-1 bg-white ">
       <View className="flex-1 px-2 pt-16">
+        {/* Header Profile Info */}
+        <View className="flex-row items-start">
+          <Image
+            source={
+              profile?.avatar
+                ? { uri: profile.avatar }
+                : require("../../assets/images/user.png")
+            }
+            className="w-20 h-20 rounded-full border-2 border-blue-700"
+          />
 
-      
-      {/* Header Profile Info */}
-      <View className="flex-row items-start">
-        <Image
-          source={require("../../assets/images/user.png")}
-          className="w-20 h-20 rounded-full border-2 border-blue-700"
-        />
-
-        <View className="flex-1 ml-2">
-          <Text className="text-2xl font-bold text-blue-700">
-            Hi, {profile?.lastName ?? "there"}
-          </Text>
-
-          <View className="flex-row items-center">
-            <Text numberOfLines={3} className="flex-1 text-blue-700 text-base">
-              {profile?.address || "Address not provided"}
+          <View className="flex-1 ml-2">
+            <Text className="text-2xl font-bold text-blue-700">
+              Hi, {profile?.lastName ?? "there"}
             </Text>
-            <Pressable onPress={loadProfile}>
-              <MaterialCommunityIcons name="refresh" size={20} color="blue" />
-            </Pressable>
+
+            <View className="flex-row items-center">
+              <Text
+                numberOfLines={3}
+                className="flex-1 text-blue-700 text-base">
+                {profile?.address || "Address not provided"}
+              </Text>
+              <Pressable onPress={loadProfile}>
+                <MaterialCommunityIcons name="refresh" size={20} color="blue" />
+              </Pressable>
+            </View>
+          </View>
+
+          <View className="flex-row items-center ml-2">
+            <Link href="/favorite" asChild>
+              <Pressable className="bg-blue-700 w-11 h-11 rounded-full items-center justify-center mr-2">
+                <Ionicons name="heart" size={20} color="white" />
+              </Pressable>
+            </Link>
+            <Link href="/notification" asChild>
+              <Pressable className="bg-blue-700 w-11 h-11 rounded-full items-center justify-center">
+                <Ionicons name="notifications" size={20} color="white" />
+              </Pressable>
+            </Link>
           </View>
         </View>
 
-        <View className="flex-row items-center ml-2">
-          <Link href="/favorite" asChild>
-            <Pressable className="bg-blue-700 w-11 h-11 rounded-full items-center justify-center mr-2">
-              <Ionicons name="heart" size={20} color="white" />
-            </Pressable>
-          </Link>
-          <Link href="/notification" asChild>
-            <Pressable className="bg-blue-700 w-11 h-11 rounded-full items-center justify-center">
-              <Ionicons name="notifications" size={20} color="white" />
-            </Pressable>
-          </Link>
+        {/* Search Bar */}
+        <View className="flex-row items-center rounded-full mt-4">
+          <Searchbar
+            value={search}
+            onChangeText={setSearch}
+            placeholder="Search"
+          />
         </View>
-      </View>
+        <FlatList
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+          }
+          data={filteredRestaurants}
+          keyExtractor={(item) => item._id}
+          showsVerticalScrollIndicator={false}
+          ListHeaderComponent={
+            <>
+              {/* Featured Section */}
+              <View className="flex-row items-center justify-between mt-4">
+                <Text className="font-bold text-blue-500 text-xl">
+                  Featured Restaurant
+                </Text>
 
-      {/* Search Bar */}
-      <View className="flex-row items-center rounded-full mt-4">
-        <Searchbar
-          value={search}
-          onChangeText={setSearch}
-          placeholder="Search"
-        />
-      </View>
-      <FlatList
-        refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-        }
-        data={filteredRestaurants}
-        keyExtractor={(item) => item._id}
-        showsVerticalScrollIndicator={false}
-        ListHeaderComponent={
-          <>
-            {/* Featured Section */}
-            <View className="flex-row items-center justify-between mt-4">
-              <Text className="font-bold text-blue-500 text-xl">
-                Featured Restaurant
-              </Text>
-
-              <Link href="/listRestaurants" asChild>
-                <Pressable className="flex-row items-center">
-                  <Text className="mr-1 text-blue-500 text-lg">See All</Text>
-                  <Ionicons name="arrow-forward" size={20} color="blue" />
-                </Pressable>
-              </Link>
-            </View>
-
-            {/* Categories */}
-            <View className="my-6 flex-row justify-between">
-              {categories.map(({ label, icon, onPress }) => (
-                <Pressable
-                  key={label}
-                  onPress={onPress}
-                  className="items-center justify-center rounded-2xl bg-gray-100"
-                  style={{ width: "23%", height: 96 }}>
-                  <MaterialCommunityIcons
-                    name={icon}
-                    size={28}
-                    color={"#3B82F6"}
-                  />
-                  <Text className="mt-2 text-center text-sm font-semibold text-blue-600">
-                    {label}
-                  </Text>
-                </Pressable>
-              ))}
-            </View>
-
-            {/* Nearby Section Header */}
-            <View className="flex my-2 mb-4">
-              <Text className="font-bold text-blue-500 text-xl">
-                Nearby Restaurant
-              </Text>
-              <View className="flex-row justify-between my-4">
-                <View className="flex-row rounded-full bg-gray-100">
-                  <Pressable
-                    onPress={() => setActiveTab("Nearby")}
-                    className={`px-5 py-2 rounded-full ${
-                      activeTab === "Nearby" ? "bg-blue-700" : "bg-transparent"
-                    }`}>
-                    <Text
-                      className={`font-semibold ${
-                        activeTab === "Nearby" ? "text-white" : "text-blue-600"
-                      }`}>
-                      Nearby
-                    </Text>
-                  </Pressable>
-                  <Pressable
-                    onPress={() => setActiveTab("All")}
-                    className={`px-5 py-2 rounded-full ${
-                      activeTab === "All" ? "bg-blue-700" : "bg-transparent"
-                    }`}>
-                    <Text
-                      className={`font-semibold ${
-                        activeTab === "All" ? "text-white" : "text-blue-600"
-                      }`}>
-                      All
-                    </Text>
-                  </Pressable>
-                </View>
                 <Link href="/listRestaurants" asChild>
                   <Pressable className="flex-row items-center">
                     <Text className="mr-1 text-blue-500 text-lg">See All</Text>
@@ -414,31 +356,96 @@ export default function Home() {
                   </Pressable>
                 </Link>
               </View>
+
+              {/* Categories */}
+              <View className="my-6 flex-row justify-between">
+                {categories.map(({ label, icon, onPress }) => (
+                  <Pressable
+                    key={label}
+                    onPress={onPress}
+                    className="items-center justify-center rounded-2xl bg-gray-100"
+                    style={{ width: "23%", height: 96 }}>
+                    <MaterialCommunityIcons
+                      name={icon}
+                      size={28}
+                      color={"#3B82F6"}
+                    />
+                    <Text className="mt-2 text-center text-sm font-semibold text-blue-600">
+                      {label}
+                    </Text>
+                  </Pressable>
+                ))}
+              </View>
+
+              {/* Nearby Section Header */}
+              <View className="flex my-2 mb-4">
+                <Text className="font-bold text-blue-500 text-xl">
+                  Nearby Restaurant
+                </Text>
+                <View className="flex-row justify-between my-4">
+                  <View className="flex-row rounded-full bg-gray-100">
+                    <Pressable
+                      onPress={() => setActiveTab("Nearby")}
+                      className={`px-5 py-2 rounded-full ${
+                        activeTab === "Nearby"
+                          ? "bg-blue-700"
+                          : "bg-transparent"
+                      }`}>
+                      <Text
+                        className={`font-semibold ${
+                          activeTab === "Nearby"
+                            ? "text-white"
+                            : "text-blue-600"
+                        }`}>
+                        Nearby
+                      </Text>
+                    </Pressable>
+                    <Pressable
+                      onPress={() => setActiveTab("All")}
+                      className={`px-5 py-2 rounded-full ${
+                        activeTab === "All" ? "bg-blue-700" : "bg-transparent"
+                      }`}>
+                      <Text
+                        className={`font-semibold ${
+                          activeTab === "All" ? "text-white" : "text-blue-600"
+                        }`}>
+                        All
+                      </Text>
+                    </Pressable>
+                  </View>
+                  <Link href="/listRestaurants" asChild>
+                    <Pressable className="flex-row items-center">
+                      <Text className="mr-1 text-blue-500 text-lg">
+                        See All
+                      </Text>
+                      <Ionicons name="arrow-forward" size={20} color="blue" />
+                    </Pressable>
+                  </Link>
+                </View>
+              </View>
+            </>
+          }
+          renderItem={({ item }) => (
+            <RestaurantCard
+              item={item}
+              isFavorite={favoriteIds.includes(item._id)}
+              onToggleFavorite={handleToggleFavorite}
+            />
+          )}
+          ListEmptyComponent={
+            <View className="items-center pt-24">
+              <Ionicons name="restaurant-outline" size={56} color="blue" />
+              <Text className="mt-4 text-lg font-bold text-gray-900">
+                No Restaurants Found
+              </Text>
+              <Text className="mt-1 text-center text-sm text-gray-400">
+                Try searching for a different name or category.
+              </Text>
             </View>
-          </>
-        }
-        renderItem={({ item }) => (
-          <RestaurantCard
-            item={item}
-            isFavorite={favoriteIds.includes(item._id)}
-            onToggleFavorite={handleToggleFavorite}
-          />
-        )}
-        ListEmptyComponent={
-          <View className="items-center pt-24">
-            <Ionicons name="restaurant-outline" size={56} color="blue" />
-            <Text className="mt-4 text-lg font-bold text-gray-900">
-              No Restaurants Found
-            </Text>
-            <Text className="mt-1 text-center text-sm text-gray-400">
-              Try searching for a different name or category.
-            </Text>
-          </View>
-        }
-      />
+          }
+        />
       </View>
       <NavigationBar />
     </View>
-    
   );
 }
