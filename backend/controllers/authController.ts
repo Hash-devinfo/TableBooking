@@ -281,7 +281,7 @@ export const updateAccount = async (req: AuthRequest, res: Response) => {
     const { password: _password, ...safeUser } = user.toObject();
     return res.status(200).json({ message: "Account updated", user: safeUser });
   } catch (error: any) {
-    // Unique index violation (email or phone already taken)
+
     if (error?.code === 11000) {
       const field = Object.keys(error.keyPattern ?? {})[0] ?? "field";
       return res

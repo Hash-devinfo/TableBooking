@@ -208,17 +208,17 @@ export default function BookATable() {
 
           {/* Quick Actions */}
           <View className="flex-row justify-between mt-6">
-            <Pressable className="flex-row border-2 border-blue-700 rounded-full items-center justify-center w-[100px] py-2 gap-2">
-              <Ionicons name="call" size={18} color="blue" />
-              <Text className="text-blue-700 font-medium">Call</Text>
+            <Pressable className="flex-row border-2 border-blue-400 rounded-full items-center justify-center w-[100px] py-2 gap-2">
+              <Ionicons name="call" size={18} color="#2563EB" />
+              <Text className="text-blue-600 font-medium">Call</Text>
             </Pressable>
-            <Pressable className="flex-row border-2 border-blue-700 rounded-full items-center justify-center w-[100px] py-2 gap-2">
-              <Ionicons name="map" size={18} color="blue" />
-              <Text className="text-blue-700 font-medium">Map</Text>
+            <Pressable className="flex-row border-2 border-blue-400 rounded-full items-center justify-center w-[100px] py-2 gap-2">
+              <Ionicons name="map" size={18} color="#2563EB" />
+              <Text className="text-blue-600 font-medium">Map</Text>
             </Pressable>
-            <Pressable className="flex-row border-2 border-blue-700 rounded-full items-center justify-center w-[100px] py-2 gap-2">
-              <Ionicons name="share-social" size={18} color="blue" />
-              <Text className="text-blue-700 font-medium">Share</Text>
+            <Pressable className="flex-row border-2 border-blue-400 rounded-full items-center justify-center w-[100px] py-2 gap-2">
+              <Ionicons name="share-social" size={18} color="#2563EB" />
+              <Text className="text-blue-600 font-medium">Share</Text>
             </Pressable>
           </View>
 
