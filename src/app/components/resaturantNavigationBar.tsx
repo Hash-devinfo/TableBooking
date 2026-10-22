@@ -1,7 +1,7 @@
-import { useEffect, useState, type ComponentProps } from "react";
-import { Pressable, Text, View } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { router, usePathname, type Href } from "expo-router";
+import { useEffect, useState, type ComponentProps } from "react";
+import { Pressable, Text, View } from "react-native";
 
 type IconName = ComponentProps<typeof MaterialCommunityIcons>["name"];
 
@@ -9,7 +9,7 @@ type Tab = { name: string; icon: IconName; route: Href };
 
 const DEFAULT_TABS: Tab[] = [
   {
-    name: "My Bookings",
+    name: "My Bookings Khuram",
     icon: "calendar-month",
     route: "/restaurant/restaurantDashboard",
   },
