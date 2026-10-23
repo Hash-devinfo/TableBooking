@@ -115,7 +115,7 @@ export const getRestaurantBookings = async (
 // Owner confirms or rejects a pending booking
 export const updateBookingStatus = async (
   bookingId: string,
-  status: "confirmed" | "rejected",
+  status: "confirmed" | "rejected" | "completed",
 ): Promise<Booking> => {
   const headers = await getAuthHeaders();
 
