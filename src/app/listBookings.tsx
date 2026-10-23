@@ -62,9 +62,7 @@ const STATUS_STYLES: Record<
     dot: "bg-gray-500",
   },
 };
-
 type IconName = React.ComponentProps<typeof Ionicons>["name"];
-
 const DashedDivider = () => (
   <View className="h-px overflow-hidden">
     <View className="h-2 border border-dashed border-gray-300" />
