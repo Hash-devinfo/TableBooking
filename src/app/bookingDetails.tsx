@@ -395,7 +395,7 @@ const BookingDetails = () => {
               </Text>
             </Pressable>
             <Pressable
-              onPress={() => router.push("/home")}
+              onPress={() => router.push("/listBookings")}
               className="flex-1 items-center rounded-full bg-blue-700 py-4">
               <Text className="text-lg font-bold text-white">My Bookings</Text>
             </Pressable>
