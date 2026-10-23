@@ -55,15 +55,15 @@ export const markRead = async (req: AuthRequest, res: Response) => {
   }
 };
 
-// export const markAllRead = async (req: AuthRequest, res: Response) => {
-//   try {
-//     await Notification.updateMany(
-//       { user: req.userId, isRead: false },
-//       { isRead: true },
-//     );
-//     return res.status(200).json({ message: "All notifications marked as read" });
-//   } catch (error) {
-//     console.error("Mark all read error:", error);
-//     return res.status(500).json({ message: "Something went wrong" });
-//   }
-// };
+export const markAllRead = async (req: AuthRequest, res: Response) => {
+  try {
+    await Notification.updateMany(
+      { user: req.userId, isRead: false },
+      { isRead: true },
+    );
+    return res.status(200).json({ message: "All notifications marked as read" });
+  } catch (error) {
+    console.error("Mark all read error:", error);
+    return res.status(500).json({ message: "Something went wrong" });
+  }
+};
