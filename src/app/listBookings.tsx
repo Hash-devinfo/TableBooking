@@ -1,3 +1,5 @@
+import { Ionicons } from "@expo/vector-icons";
+import { Link, router, useFocusEffect } from "expo-router";
 import React, { useCallback, useMemo, useState } from "react";
 import {
   ActivityIndicator,
@@ -9,12 +11,10 @@ import {
   Text,
   View,
 } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
-import { Link, router, useFocusEffect } from "expo-router";
-import NavigationBar from "./components/navigationBar";
 import { getMyBookings, type Booking } from "../api/bookingApi";
 import { resolveImageUrl } from "../api/restaurantApi";
 import { getBookingCode } from "../utils/booking";
+import NavigationBar from "./components/navigationBar";
 
 type Filter = "all" | Booking["status"];
 
@@ -22,6 +22,7 @@ const FILTERS: { key: Filter; label: string }[] = [
   { key: "all", label: "All" },
   { key: "pending", label: "Pending" },
   { key: "confirmed", label: "Confirmed" },
+  { key: "completed", label: "Completed" },
   { key: "rejected", label: "Rejected" },
   { key: "cancelled", label: "Cancelled" },
 ];
@@ -41,6 +42,12 @@ const STATUS_STYLES: Record<
     pill: "bg-green-100",
     text: "text-green-700",
     dot: "bg-green-500",
+  },
+  completed: {
+    label: "Completed",
+    pill: "bg-blue-100",
+    text: "text-blue-700",
+    dot: "bg-blue-500",
   },
   rejected: {
     label: "Rejected",
@@ -157,13 +164,13 @@ const BookingCard = ({ item }: { item: Booking }) => {
 
       {/* Details */}
       <View className="flex-row">
-        <InfoColumn icon="calendar-outline" label="DATE" value={formattedDate} />
-        <InfoColumn icon="time-outline" label="TIME" value={item.time} />
         <InfoColumn
-          icon="people"
-          label="GUESTS"
-          value={`${item.guests} pax`}
+          icon="calendar-outline"
+          label="DATE"
+          value={formattedDate}
         />
+        <InfoColumn icon="time-outline" label="TIME" value={item.time} />
+        <InfoColumn icon="people" label="GUESTS" value={`${item.guests} pax`} />
         <InfoColumn icon="home-outline" label="TYPE" value={item.seatingType} />
       </View>
 
@@ -178,7 +185,10 @@ const BookingCard = ({ item }: { item: Booking }) => {
         </Text>
         <Pressable
           onPress={() =>
-            router.push({ pathname: "/bookingDetails", params: { id: item._id } })
+            router.push({
+              pathname: "/bookingDetails",
+              params: { id: item._id },
+            })
           }
           accessibilityRole="button"
           className="rounded-lg bg-blue-700 px-5 py-3">
@@ -219,8 +229,6 @@ const ListBookings = () => {
     await load();
     setRefreshing(false);
   };
-
-  
 
   const visible = useMemo(
     () =>
@@ -273,13 +281,11 @@ const ListBookings = () => {
                   }`}>
                   {label}
                 </Text>
-                
               </Pressable>
             );
           })}
         </ScrollView>
 
-        
         {loading ? (
           <View className="flex-1 items-center justify-center">
             <ActivityIndicator size="large" color="#2563EB" />
