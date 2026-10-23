@@ -20,7 +20,7 @@ const Notification = () => {
           <Ionicons name="notifications" size={26} color="#2563EB" />
         </Pressable>
       </View>
-      <View className="flex-row justify-between rounded-xl border border-gray-200 p-4 shadow-md shadow-slate-900 " >
+      <View className="flex-row justify-between rounded-xl border border-gray-200 p-4 " >
         <View className="flex-1 flex-row gap-4">
           <Image
             source={require("../../assets/images/logo.png")}
