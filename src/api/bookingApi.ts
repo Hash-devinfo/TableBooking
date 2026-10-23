@@ -16,7 +16,6 @@ type PopulatedCustomer = {
   _id: string;
   firstName?: string;
   lastName?: string;
-  
 };
 
 export type Booking = {
@@ -29,7 +28,7 @@ export type Booking = {
   floor?: string;
   seatingType: string;
   request?: string;
-  status: "pending" | "confirmed" | "rejected" | "cancelled";
+  status: "pending" | "confirmed" | "rejected" | "completed" | "cancelled";
   createdAt: string;
 };
 
