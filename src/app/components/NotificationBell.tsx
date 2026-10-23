@@ -2,8 +2,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { router, useFocusEffect } from "expo-router";
 import { useCallback, useState } from "react";
 import { Pressable, Text, View } from "react-native";
-import { getUnreadCount } from "../../api/notificationApi";
-
+import { getUnreadCount } from "../../api/notificationApi"
 export default function NotificationBell({
   color = "#2563EB",
   size = 26,
