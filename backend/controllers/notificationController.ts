@@ -54,7 +54,6 @@ export const markRead = async (req: AuthRequest, res: Response) => {
     return res.status(500).json({ message: "Something went wrong" });
   }
 };
-
 export const markAllRead = async (req: AuthRequest, res: Response) => {
   try {
     await Notification.updateMany(
