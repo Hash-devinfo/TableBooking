@@ -1,11 +1,11 @@
 // controllers/bookingController.ts
 import { Response } from "express";
 import mongoose from "mongoose";
+import { AuthRequest } from "../middleware/authMiddleware.js";
 import Booking from "../models/Booking.js";
 import Restaurant from "../models/Restaurant.js";
-import { AuthRequest } from "../middleware/authMiddleware.js";
-import { notifyAdminsOfNewBooking } from "../utils/bookingEmails.js";
 import User from "../models/User.js";
+import { notifyAdminsOfNewBooking } from "../utils/bookingEmails.js";
 import { sendEmail } from "../utils/mailer.js";
 
 const escapeHtml = (value: unknown): string =>
@@ -165,7 +165,13 @@ export const getRestaurantBookings = async (
     return res.status(500).json({ message: "Something went wrong" });
   }
 };
+const OWNER_STATUSES = ["confirmed", "rejected", "completed"];
 
+// What an owner may move a booking to, from its current status
+const OWNER_TRANSITIONS: Record<string, string[]> = {
+  pending: ["confirmed", "rejected"],
+  confirmed: ["completed"],
+};
 export const updateBookingStatus = async (req: AuthRequest, res: Response) => {
   try {
     const { id } = req.params;
