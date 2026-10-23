@@ -39,22 +39,22 @@ export default function NotificationBell({
   );
 
   return (
-    // <Pressable
-    //   onPress={() => router.push("/notification")}
-    //   hitSlop={8}
-    //   accessibilityRole="button"
-    //   accessibilityLabel={
-    //     count > 0 ? `Notifications, ${count} unread` : "Notifications"
-    //   }
-    //   className={containerClassName}>
-    //   <Ionicons name="notifications" size={size} color={color} />
-    //   {count > 0 && (
-    //     <View className="absolute -right-1 -top-1 min-w-[18px] items-center rounded-full bg-red-500 px-1">
-    //       <Text className="text-[10px] font-bold text-white">
-    //         {count > 99 ? "99+" : count}
-    //       </Text>
-    //     </View>
-    //   )}
-    // </Pressable>
+    <Pressable
+      onPress={() => router.push("/notification")}
+      hitSlop={8}
+      accessibilityRole="button"
+      accessibilityLabel={
+        count > 0 ? `Notifications, ${count} unread` : "Notifications"
+      }
+      className={containerClassName}>
+      <Ionicons name="notifications" size={size} color={color} />
+      {count > 0 && (
+        <View className="absolute -right-1 -top-1 min-w-[18px] items-center rounded-full bg-red-500 px-1">
+          <Text className="text-[10px] font-bold text-white">
+            {count > 99 ? "99+" : count}
+          </Text>
+        </View>
+      )}
+    </Pressable>
   );
 }
