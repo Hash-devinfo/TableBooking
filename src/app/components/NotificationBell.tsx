@@ -1,7 +1,7 @@
-import { useCallback, useState } from "react";
-import { Pressable, Text, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { router, useFocusEffect } from "expo-router";
+import { useCallback, useState } from "react";
+import { Pressable, Text, View } from "react-native";
 import { getUnreadCount } from "../../api/notificationApi";
 
 export default function NotificationBell({
@@ -23,9 +23,7 @@ export default function NotificationBell({
         try {
           const n = await getUnreadCount();
           if (active) setCount(n);
-        } catch {
-          
-        }
+        } catch {}
       };
 
       void refresh();
@@ -49,7 +47,7 @@ export default function NotificationBell({
       className={containerClassName}>
       <Ionicons name="notifications" size={size} color={color} />
       {count > 0 && (
-        <View className="absolute -right-1 -top-1 min-w-[18px] items-center rounded-full bg-red-500 px-1">
+        <View className="absolute right-1 top-1 min-w-[18px] items-center rounded-full bg-red-500 px-1">
           <Text className="text-[10px] font-bold text-white">
             {count > 99 ? "99+" : count}
           </Text>
