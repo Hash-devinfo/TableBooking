@@ -8,9 +8,7 @@ import {
 import { protect } from "../middleware/authMiddleware.js";
 
 const router = Router();
-
 router.use(protect);
-
 router.get("/", getMyNotifications);
 router.get("/unread-count", getUnreadCount);
 router.patch("/read-all", markAllRead);
