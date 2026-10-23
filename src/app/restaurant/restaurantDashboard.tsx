@@ -1,5 +1,6 @@
-import React, { useCallback, useState, useMemo } from "react";
-import { ActivityIndicator, Searchbar } from "react-native-paper";
+import { Ionicons } from "@expo/vector-icons";
+import { router, useFocusEffect } from "expo-router";
+import { useCallback, useMemo, useState } from "react";
 import {
   Alert,
   FlatList,
@@ -9,8 +10,7 @@ import {
   Text,
   View,
 } from "react-native";
-import { router, useFocusEffect } from "expo-router";
-import * as SecureStore from "expo-secure-store";
+import { ActivityIndicator, Searchbar } from "react-native-paper";
 import {
   deleteBooking,
   getRestaurantBookings,
@@ -18,7 +18,6 @@ import {
   type Booking,
 } from "../../api/bookingApi";
 import { getBookingCode } from "../../utils/booking";
-import { Ionicons } from "@expo/vector-icons";
 
 const STATUS_STYLES: Record<string, { label: string; className: string }> = {
   pending: { label: "Pending", className: "bg-yellow-100 text-yellow-700" },
@@ -104,7 +103,7 @@ const buildSearchText = (b: Booking): string => {
   if (!Number.isNaN(d.getTime())) {
     const m = d.getMonth() + 1;
     parts.push(
-      formatDate(b.date), 
+      formatDate(b.date),
       d.toLocaleDateString("en-US", {
         weekday: "long",
         month: "long",
@@ -126,10 +125,9 @@ const RestaurantDashboard = () => {
   const [refreshing, setRefreshing] = useState(false);
   const [busyId, setBusyId] = useState<string | null>(null);
 
-const goBack = () => {
-  if (router.canGoBack()) router.back();
-  
-};
+  const goBack = () => {
+    if (router.canGoBack()) router.back();
+  };
 
   const sortedBookings = useMemo(
     () =>
@@ -192,7 +190,7 @@ const goBack = () => {
 
   const handleUpdateStatus = async (
     bookingId: string,
-    status: "confirmed" | "rejected"| "completed",
+    status: "confirmed" | "rejected" | "completed",
   ) => {
     try {
       setBusyId(bookingId);
@@ -254,20 +252,20 @@ const goBack = () => {
 
   return (
     <View className="flex-1 pt-16 bg-white p-4">
-       <View className="flex-row items-center">
-          <Pressable
-            onPress={goBack}
-            disabled={!goBack}
-            hitSlop={8}
-            accessibilityRole="button"
-            accessibilityLabel="Go back"
-            className="mr-3 h-10 w-10 items-center justify-center rounded-full bg-blue-50">
-            <Ionicons name="arrow-back" size={22} color="#2563EB" />
-          </Pressable>
-          <Text className="flex-1 text-2xl font-bold text-blue-900">
-            Restaurant Dashboard
-          </Text>
-        </View>
+      <View className="flex-row items-center">
+        <Pressable
+          onPress={goBack}
+          disabled={!goBack}
+          hitSlop={8}
+          accessibilityRole="button"
+          accessibilityLabel="Go back"
+          className="mr-3 h-10 w-10 items-center justify-center rounded-full bg-blue-50">
+          <Ionicons name="arrow-back" size={22} color="#2563EB" />
+        </Pressable>
+        <Text className="flex-1 text-2xl font-bold text-blue-900">
+          Restaurant Dashboard
+        </Text>
+      </View>
       <View className="my-4">
         <Searchbar
           value={query}
@@ -328,6 +326,7 @@ const goBack = () => {
               const busy = busyId === item._id;
 
               const canRespond = item.status === "pending";
+              const canComplete = item.status === "confirmed";
               const canDelete =
                 item.status === "rejected" || item.status === "cancelled";
 
@@ -382,6 +381,14 @@ const goBack = () => {
                           disabled={!canRespond}
                           onPress={() =>
                             handleUpdateStatus(item._id, "confirmed")
+                          }
+                        />
+                        <ActionButton
+                          label="Complete"
+                          enabledClass="bg-blue-600"
+                          disabled={!canComplete}
+                          onPress={() =>
+                            handleUpdateStatus(item._id, "completed")
                           }
                         />
                         <ActionButton
