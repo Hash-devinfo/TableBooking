@@ -3,6 +3,7 @@ import Notification, { type NotificationType } from "../models/Notification.js";
 import Restaurant from "../models/Restaurant.js";
 import User from "../models/User.js";
 
+
 type Id = string | Types.ObjectId;
 type BookingInfo = {
   _id: Id;
@@ -119,19 +120,3 @@ export const notifyBookingCancelled = async (booking: BookingInfo) => {
   }
 };
 
-// Owner edited the booking's details
-export const notifyBookingUpdated = async (booking: BookingInfo) => {
-  try {
-    const c = await context(booking);
-
-    await push({
-      user: booking.customer,
-      type: "booking_updated",
-      title: "Booking Updated",
-      message: `${c.restaurantName} updated your booking. It is now ${c.when} for ${booking.guests} guest${booking.guests === 1 ? "" : "s"}.`,
-      booking: booking._id,
-    });
-  } catch (error) {
-    console.error("Notification error (updated):", error);
-  }
-};

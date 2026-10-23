@@ -4,9 +4,12 @@ import mongoose from "mongoose";
 import { AuthRequest } from "../middleware/authMiddleware.js";
 import Booking from "../models/Booking.js";
 import Restaurant from "../models/Restaurant.js";
-import User from "../models/User.js";
 import { notifyAdminsOfNewBooking } from "../utils/bookingEmails.js";
-import { sendEmail } from "../utils/mailer.js";
+import {
+  notifyBookingCancelled,
+  notifyBookingCreated,
+  notifyBookingDecision,
+} from "../utils/bookingNotifications.js";
 
 const escapeHtml = (value: unknown): string =>
   String(value ?? "").replace(
@@ -71,6 +74,14 @@ export const createBooking = async (req: AuthRequest, res: Response) => {
       floor,
       request,
     });
+    void notifyBookingCreated({
+      _id: booking._id,
+      customer: req.userId as string,
+      restaurant: restaurant._id,
+      date: bookingDate,
+      time,
+      guests: guestCount,
+    });
     const populated = await booking.populate(
       "restaurant",
       "name city province images address phone",
@@ -126,7 +137,7 @@ export const cancelBooking = async (req: AuthRequest, res: Response) => {
 
     booking.status = "cancelled";
     await booking.save();
-
+    void notifyBookingCancelled(booking);
     return res.status(200).json({ message: "Booking cancelled", booking });
   } catch (error) {
     console.error("Cancel booking error:", error);
@@ -172,6 +183,7 @@ const OWNER_TRANSITIONS: Record<string, string[]> = {
   pending: ["confirmed", "rejected"],
   confirmed: ["completed"],
 };
+
 export const updateBookingStatus = async (req: AuthRequest, res: Response) => {
   try {
     const { id } = req.params;
@@ -180,10 +192,10 @@ export const updateBookingStatus = async (req: AuthRequest, res: Response) => {
     if (!mongoose.isValidObjectId(id)) {
       return res.status(400).json({ message: "Invalid booking id" });
     }
-    if (!["confirmed", "rejected"].includes(status)) {
+    if (!OWNER_STATUSES.includes(status)) {
       return res
         .status(400)
-        .json({ message: "Status must be confirmed or rejected" });
+        .json({ message: "Status must be confirmed, rejected or completed" });
     }
 
     const booking = await Booking.findById(id);
@@ -200,128 +212,16 @@ export const updateBookingStatus = async (req: AuthRequest, res: Response) => {
       return res.status(403).json({ message: "Not allowed" });
     }
 
-    if (booking.status === "cancelled") {
-      return res
-        .status(400)
-        .json({ message: "Cancelled bookings can't be changed" });
-    }
-
-    if (booking.status !== "pending") {
-      return res
-        .status(400)
-        .json({ message: `Booking is already ${booking.status}` });
+    if (!OWNER_TRANSITIONS[booking.status]?.includes(status)) {
+      return res.status(400).json({
+        message: `A ${booking.status} booking can't be marked ${status}`,
+      });
     }
 
     booking.status = status;
     await booking.save();
-    const customer = await User.findById(booking.customer).select(
-      "email firstName",
-    );
 
-    if (customer?.email) {
-      const messages = {
-        confirmed: {
-          subject: "🎉 Your Table Booking is Confirmed!",
-          text: `Hi ${customer.firstName}, great news! ${restaurant.name} has confirmed your table reservation.\n\nBooking Details:\n- Date: ${booking.date}\n- Time: ${booking.time}\n- Guests: ${booking.guests}\n- Seating Type: ${booking.seatingType}\n- Floor: ${booking.floor || "Standard Floor"}\n- Reference ID: ${booking._id}\n\nLocation: ${restaurant.address || "N/A"}\nContact: ${restaurant.phone || "N/A"}\n\nWe look forward to hosting you!`,
-          html: `
-    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #e2e8f0; border-radius: 10px; background-color: #ffffff;">
-      <h2 style="color: #2563eb; text-align: center; margin-bottom: 5px;">Booking Confirmed! 🎉</h2>
-      <p style="text-align: center; color: #64748b; font-size: 14px; margin-top: 0;">Your table is locked in and ready for you.</p>
-      
-      <p>Hi <b>${escapeHtml(customer.firstName)}</b>,</p>
-      <p>Great news! <b>${escapeHtml(restaurant.name)}</b> has successfully accepted and confirmed your table reservation.</p>
-      
-      <div style="background-color: #f8fafc; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #2563eb;">
-        <p style="margin: 6px 0;"><b>📅 Date:</b> ${escapeHtml(booking.date)}</p>
-        <p style="margin: 6px 0;"><b>⏰ Time:</b> ${escapeHtml(booking.time)}</p>
-        <p style="margin: 6px 0;"><b>👥 Guests:</b> ${booking.guests} People</p>
-        <p style="margin: 6px 0;"><b>🪑 Seating Type:</b> ${escapeHtml(booking.seatingType)}</p>
-        <p style="margin: 6px 0;"><b>🏢 Floor:</b> ${escapeHtml(booking.floor || "Standard Floor")}</p>
-        <p style="margin: 6px 0;"><b>🆔 Reference ID:</b> <span style="font-family: monospace; background: #e2e8f0; padding: 2px 6px; border-radius: 4px;">${escapeHtml(booking._id)}</span></p>
-      </div>
-
-      ${restaurant.address ? `<p style="margin: 6px 0;"><b>📍 Location:</b> ${escapeHtml(restaurant.address)}</p>` : ""}
-      ${restaurant.phone ? `<p style="margin: 6px 0;"><b>📞 Restaurant Contact:</b> ${escapeHtml(restaurant.phone)}</p>` : ""}
-
-      <p style="margin-top: 20px; color: #475569; font-size: 14px;">If you need to review your booking or make modifications, you can manage it directly through your account dashboard.</p>
-      
-      <div style="text-align: center; margin-top: 30px; margin-bottom: 20px;">
-        <a href="myapp://home" style="background-color: #2563eb; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block;">View Booking in App</a>
-      </div>
-
-      <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 20px 0;" />
-      <p style="font-size: 12px; color: #94a3b8; text-align: center;">Thank you for using our Table Booking App. See you soon!</p>
-    </div>
-  `,
-        },
-        rejected: {
-          subject: "❌ Update Regarding Your Table Booking Request",
-          text: `Hi ${customer.firstName}, unfortunately, ${restaurant.name} was unable to accept your table reservation for ${booking.date} at ${booking.time}.\n\nWe apologize for any inconvenience. You can explore other available restaurants or try booking for a different time slot in the app.`,
-          html: `
-            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #e2e8f0; border-radius: 10px; background-color: #ffffff;">
-              <h2 style="color: #dc2626; text-align: center; margin-bottom: 5px;">Booking Request Declined</h2>
-              <p style="text-align: center; color: #64748b; font-size: 14px; margin-top: 0;">Unfortunately, the restaurant could not accommodate your request.</p>
-              
-              <p>Hi <b>${escapeHtml(customer.firstName)}</b>,</p>
-              <p>We regret to inform you that <b>${escapeHtml(restaurant.name)}</b> was unable to accept your table reservation request for this time slot.</p>
-              
-              <div style="background-color: #f8fafc; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #dc2626;">
-                <p style="margin: 6px 0;"><b>📅 Requested Date:</b> ${escapeHtml(booking.date)}</p>
-                <p style="margin: 6px 0;"><b>⏰ Requested Time:</b> ${escapeHtml(booking.time)}</p>
-                <p style="margin: 6px 0;"><b>👥 Guests:</b> ${booking.guests} People</p>
-                <p style="margin: 6px 0;"><b>🆔 Reference ID:</b> <span style="font-family: monospace; background: #e2e8f0; padding: 2px 6px; border-radius: 4px;">${escapeHtml(booking._id)}</span></p>
-              </div>
-
-              <p style="margin-top: 20px; color: #475569; font-size: 14px;">Don't worry! There are plenty of other amazing dining options available. You can browse nearby restaurants and try booking a different time or location.</p>
-              
-              <div style="text-align: center; margin-top: 30px; margin-bottom: 20px;">
-                <a href="myapp://home" style="background-color: #2563eb; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block;">Browse Other Restaurants</a>
-              </div>
-
-              <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 20px 0;" />
-              <p style="font-size: 12px; color: #94a3b8; text-align: center;">Thank you for using our Table Booking App.</p>
-            </div>
-          `,
-        },
-        cancelled: {
-          subject: "⚠️ Notice: Your Table Booking Was Cancelled",
-          text: `Hi ${customer.firstName}, your table reservation at ${restaurant.name} (Ref: ${booking._id}) has been successfully cancelled.\n\nIf you did not request this cancellation, please contact support or check your app dashboard.`,
-          html: `
-            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #e2e8f0; border-radius: 10px; background-color: #ffffff;">
-              <h2 style="color: #475569; text-align: center; margin-bottom: 5px;">Booking Cancelled</h2>
-              <p style="text-align: center; color: #64748b; font-size: 14px; margin-top: 0;">This reservation has been cancelled.</p>
-              
-              <p>Hi <b>${escapeHtml(customer.firstName)}</b>,</p>
-              <p>Your table reservation at <b>${escapeHtml(restaurant.name)}</b> has been cancelled as requested.</p>
-              
-              <div style="background-color: #f8fafc; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #64748b;">
-                <p style="margin: 6px 0;"><b>📅 Date was:</b> ${escapeHtml(booking.date)}</p>
-                <p style="margin: 6px 0;"><b>⏰ Time was:</b> ${escapeHtml(booking.time)}</p>
-                <p style="margin: 6px 0;"><b>🆔 Reference ID:</b> <span style="font-family: monospace; background: #e2e8f0; padding: 2px 6px; border-radius: 4px;">${escapeHtml(booking._id)}</span></p>
-              </div>
-
-              <p style="margin-top: 20px; color: #475569; font-size: 14px;">If you'd like to book a new table or choose another spot, feel free to open the app anytime.</p>
-              
-              <div style="text-align: center; margin-top: 30px; margin-bottom: 20px;">
-                <a href="myapp://home" style="background-color: #2563eb; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block;">Open App</a>
-              </div>
-
-              <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 20px 0;" />
-              <p style="font-size: 12px; color: #94a3b8; text-align: center;">Thank you for using our Table Booking App.</p>
-            </div>
-          `,
-        },
-      } as const;
-
-      const message = messages[status as keyof typeof messages];
-
-      if (message) {
-        void sendEmail({
-          to: customer.email,
-          ...message,
-        });
-      }
-    }
+    void notifyBookingDecision(booking, status);
 
     return res.status(200).json({ message: `Booking ${status}`, booking });
   } catch (error) {
