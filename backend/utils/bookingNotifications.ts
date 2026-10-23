@@ -3,7 +3,6 @@ import Notification, { type NotificationType } from "../models/Notification.js";
 import Restaurant from "../models/Restaurant.js";
 import User from "../models/User.js";
 
-
 type Id = string | Types.ObjectId;
 type BookingInfo = {
   _id: Id;
@@ -79,22 +78,41 @@ export const notifyBookingCreated = async (booking: BookingInfo) => {
     console.error("Notification error (created):", error);
   }
 };
-// Owner confirmed or rejected
+const DECISIONS = {
+  confirmed: {
+    type: "booking_confirmed",
+    title: "Booking Confirmed",
+    text: (restaurant: string, when: string) =>
+      `${restaurant} confirmed your table for ${when}.`,
+  },
+  rejected: {
+    type: "booking_rejected",
+    title: "Booking Declined",
+    text: (restaurant: string, when: string) =>
+      `${restaurant} couldn't accept your booking for ${when}.`,
+  },
+  completed: {
+    type: "booking_completed",
+    title: "Booking Completed",
+    text: (restaurant: string, when: string) =>
+      `Thanks for dining at ${restaurant}! Your booking on ${when} is now complete.`,
+  },
+} as const;
+
+// Owner changed the booking's status
 export const notifyBookingDecision = async (
   booking: BookingInfo,
-  decision: "confirmed" | "rejected",
+  decision: keyof typeof DECISIONS,
 ) => {
   try {
     const c = await context(booking);
-    const confirmed = decision === "confirmed";
+    const d = DECISIONS[decision];
 
     await push({
       user: booking.customer,
-      type: confirmed ? "booking_confirmed" : "booking_rejected",
-      title: confirmed ? "Booking Confirmed" : "Booking Declined",
-      message: confirmed
-        ? `${c.restaurantName} confirmed your table for ${c.when}.`
-        : `${c.restaurantName} couldn't accept your booking for ${c.when}.`,
+      type: d.type,
+      title: d.title,
+      message: d.text(c.restaurantName, c.when),
       booking: booking._id,
     });
   } catch (error) {
@@ -119,4 +137,3 @@ export const notifyBookingCancelled = async (booking: BookingInfo) => {
     console.error("Notification error (cancelled):", error);
   }
 };
-
