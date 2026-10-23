@@ -31,29 +31,29 @@ export const getUnreadCount = async (req: AuthRequest, res: Response) => {
   }
 };
 
-// export const markRead = async (req: AuthRequest, res: Response) => {
-//   try {
-//     const { id } = req.params;
-//     if (!mongoose.isValidObjectId(id)) {
-//       return res.status(400).json({ message: "Invalid notification id" });
-//     }
+export const markRead = async (req: AuthRequest, res: Response) => {
+  try {
+    const { id } = req.params;
+    if (!mongoose.isValidObjectId(id)) {
+      return res.status(400).json({ message: "Invalid notification id" });
+    }
 
-//     // Matching on user means nobody can mark someone else's notification
-//     const notification = await Notification.findOneAndUpdate(
-//       { _id: id, user: req.userId },
-//       { isRead: true },
-//       { new: true },
-//     );
-//     if (!notification) {
-//       return res.status(404).json({ message: "Notification not found" });
-//     }
+    // Matching on user means nobody can mark someone else's notification
+    const notification = await Notification.findOneAndUpdate(
+      { _id: id, user: req.userId },
+      { isRead: true },
+      { new: true },
+    );
+    if (!notification) {
+      return res.status(404).json({ message: "Notification not found" });
+    }
 
-//     return res.status(200).json({ notification });
-//   } catch (error) {
-//     console.error("Mark read error:", error);
-//     return res.status(500).json({ message: "Something went wrong" });
-//   }
-// };
+    return res.status(200).json({ notification });
+  } catch (error) {
+    console.error("Mark read error:", error);
+    return res.status(500).json({ message: "Something went wrong" });
+  }
+};
 
 // export const markAllRead = async (req: AuthRequest, res: Response) => {
 //   try {
