@@ -15,6 +15,7 @@ import { getMyBookings, type Booking } from "../api/bookingApi";
 import { resolveImageUrl } from "../api/restaurantApi";
 import { getBookingCode } from "../utils/booking";
 import NavigationBar from "./components/navigationBar";
+import NotificationBell from "./components/NotificationBell";
 
 type Filter = "all" | Booking["status"];
 
@@ -247,11 +248,11 @@ const ListBookings = () => {
             </Pressable>
           </Link>
           <Text className="text-2xl font-bold text-blue-700">My Bookings</Text>
-          <Link href="/notification" asChild>
-            <Pressable className="h-10 w-10 items-end justify-center">
-              <Ionicons name="notifications" size={26} color="blue" />
-            </Pressable>
-          </Link>
+          <NotificationBell
+            color="white"
+            size={22}
+            containerClassName="h-11 w-11 items-center justify-center rounded-full bg-blue-700"
+          />
         </View>
 
         {/* Status filter */}

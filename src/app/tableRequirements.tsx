@@ -1,29 +1,33 @@
-import {
-  View,
-  Text,
-  Platform,
-  Pressable,
-  Alert,
-  Image,
-  ScrollView,
-  TextInput,
-  ActivityIndicator,
-} from "react-native";
-import { useState, useEffect, useMemo } from "react";
 import { Ionicons } from "@expo/vector-icons";
 import DateTimePicker, {
   DateTimePickerEvent,
 } from "@react-native-community/datetimepicker";
-import { Button, RadioButton } from "react-native-paper";
 import { router, useLocalSearchParams } from "expo-router";
 import * as SecureStore from "expo-secure-store";
-import { getRestaurantById, type Restaurant } from "../api/restaurantApi";
+import { useEffect, useMemo, useState } from "react";
+import {
+  ActivityIndicator,
+  Alert,
+  Image,
+  Platform,
+  Pressable,
+  ScrollView,
+  Text,
+  TextInput,
+  View,
+} from "react-native";
+import { Button, RadioButton } from "react-native-paper";
 import {
   getFavorites,
   toggleFavorite,
   type FavoriteRestaurant,
 } from "../api/favoritesApi";
-import { resolveImageUrl } from "../api/restaurantApi";
+import {
+  getRestaurantById,
+  resolveImageUrl,
+  type Restaurant,
+} from "../api/restaurantApi";
+import NotificationBell from "./components/NotificationBell";
 
 const TOKEN_KEY = "authToken"; // same key used in index.tsx and bookingApi.ts
 
@@ -246,11 +250,11 @@ const TableRequirements = () => {
             <Ionicons name="arrow-back" size={24} color="#2563EB" />
           </Pressable>
           <Text className="text-blue-600 font-bold text-3xl">Book a Table</Text>
-          <Pressable
-            onPress={() => router.push("/notification")}
-            className="w-12 h-12">
-            <Ionicons name="notifications" size={26} color="#2563EB" />
-          </Pressable>
+          <NotificationBell
+            color="white"
+            size={22}
+            containerClassName="h-11 w-11 items-center justify-center rounded-full bg-blue-700"
+          />
         </View>
 
         {/* Restaurant summary */}

@@ -1,18 +1,19 @@
-import { useState, useCallback } from "react";
+import { Ionicons } from "@expo/vector-icons";
+import { Link, router, useFocusEffect } from "expo-router";
+import * as SecureStore from "expo-secure-store";
+import { useCallback, useState } from "react";
 import {
+  ActivityIndicator,
+  Alert,
   FlatList,
   Image,
   Pressable,
   Text,
   View,
-  ActivityIndicator,
-  Alert,
 } from "react-native";
-import { Link, router, useFocusEffect } from "expo-router";
-import { Ionicons } from "@expo/vector-icons";
-import * as SecureStore from "expo-secure-store";
 import { getFavorites, toggleFavorite } from "../api/favoritesApi"; // Update path if needed
 import { resolveImageUrl } from "../api/restaurantApi";
+import NotificationBell from "./components/NotificationBell";
 
 type FavoriteRestaurant = {
   _id: string;
@@ -181,11 +182,11 @@ const Favorite = () => {
           </Pressable>
         </Link>
         <Text className="text-2xl font-bold text-blue-700">Favourite</Text>
-        <Link href="/notification" asChild>
-          <Pressable className="h-10 w-10 items-end justify-center">
-            <Ionicons name="notifications" size={26} color="blue" />
-          </Pressable>
-        </Link>
+        <NotificationBell
+          color="white"
+          size={22}
+          containerClassName="h-11 w-11 items-center justify-center rounded-full bg-blue-700"
+        />
       </View>
 
       <FlatList

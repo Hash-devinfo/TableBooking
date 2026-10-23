@@ -1,15 +1,15 @@
-import { View, Text, Pressable, Image, Alert, ScrollView } from "react-native";
-import React, { useEffect, useState } from "react";
-import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
-import { Link, router } from "expo-router";
-import { useLocalSearchParams } from "expo-router";
-import { Checkbox, Button, ActivityIndicator } from "react-native-paper";
 import { createBooking } from "@/api/bookingApi";
 import {
   getRestaurantById,
   resolveImageUrl,
   type Restaurant,
 } from "@/api/restaurantApi";
+import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
+import { router, useLocalSearchParams } from "expo-router";
+import { useEffect, useState } from "react";
+import { Alert, Image, Pressable, ScrollView, Text, View } from "react-native";
+import { ActivityIndicator, Button, Checkbox } from "react-native-paper";
+import NotificationBell from "./components/NotificationBell";
 const BookingConfirmation = () => {
   const {
     restaurantId,
@@ -160,11 +160,11 @@ const BookingConfirmation = () => {
           <Ionicons name="arrow-back" size={24} color="#2563EB" />
         </Pressable>
         <Text className="text-blue-600 font-bold text-3xl">Book a Table</Text>
-        <Link href={"/notification"} asChild>
-          <Pressable className="w-12 h-12  ">
-            <Ionicons name="notifications" size={26} color="#2563EB" />
-          </Pressable>
-        </Link>
+        <NotificationBell
+          color="white"
+          size={22}
+          containerClassName="h-11 w-11 items-center justify-center rounded-full bg-blue-700"
+        />
       </View>
       <View className="flex  px-2">
         <View className="bg-gray-100 px-4 py-4  rounded-lg">

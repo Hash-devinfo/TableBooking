@@ -18,6 +18,7 @@ import { getAllRestaurants } from "@/api/restaurantApi";
 import { getFavorites, toggleFavorite } from "../api/favoritesApi";
 import { resolveImageUrl } from "../api/restaurantApi";
 import NavigationBar from "./components/navigationBar";
+import NotificationBell from "./components/NotificationBell";
 
 type Restaurant = {
   _id: string;
@@ -255,11 +256,11 @@ export default function ListRestaurants() {
           </Pressable>
         </Link>
         <Text className="text-blue-600 font-bold text-3xl">Restaurants</Text>
-        <Link href={"/notification"} asChild>
-          <Pressable className="w-12 h-12  ">
-            <Ionicons name="notifications" size={26} color="#2563EB" />
-          </Pressable>
-        </Link>
+        <NotificationBell
+  color="white"
+  size={22}
+  containerClassName="h-11 w-11 items-center justify-center rounded-full bg-blue-700"
+/>
       </View>
 
       <View className="mb-3">

@@ -17,6 +17,7 @@ import { getMe } from "../api/authApi";
 import { getFavorites, toggleFavorite } from "../api/favoritesApi";
 import { resolveImageUrl } from "../api/restaurantApi";
 import NavigationBar from "./components/navigationBar";
+import NotificationBell from "./components/NotificationBell";
 
 type Category = {
   label: string;
@@ -318,11 +319,11 @@ export default function Home() {
                 <Ionicons name="heart" size={20} color="white" />
               </Pressable>
             </Link>
-            <Link href="/notification" asChild>
-              <Pressable className="bg-blue-700 w-11 h-11 rounded-full items-center justify-center">
-                <Ionicons name="notifications" size={20} color="white" />
-              </Pressable>
-            </Link>
+            <NotificationBell
+  color="white"
+  size={22}
+  containerClassName="h-11 w-11 items-center justify-center rounded-full bg-blue-700"
+/>
           </View>
         </View>
 
