@@ -1,5 +1,5 @@
 // models/Booking.ts
-import mongoose, { Schema, Document, Model } from "mongoose";
+import mongoose, { Document, Model, Schema } from "mongoose";
 
 export interface IBooking extends Document {
   customer: mongoose.Types.ObjectId;
@@ -11,7 +11,7 @@ export interface IBooking extends Document {
   request?: string;
   floor: string;
 
-  status: "pending" | "confirmed" | "rejected" | "cancelled";
+  status: "pending" | "confirmed" | "rejected" | "completed" | "cancelled";
 }
 
 const bookingSchema = new Schema<IBooking>(
@@ -35,7 +35,7 @@ const bookingSchema = new Schema<IBooking>(
 
     status: {
       type: String,
-      enum: ["pending", "confirmed", "rejected", "cancelled"],
+      enum: ["pending", "confirmed", "rejected", "completed", "cancelled"],
       default: "pending",
     },
   },
