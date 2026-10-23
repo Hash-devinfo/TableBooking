@@ -1,3 +1,5 @@
+import { Ionicons } from "@expo/vector-icons";
+import { router, useFocusEffect, useLocalSearchParams } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
 import {
   ActivityIndicator,
@@ -8,8 +10,6 @@ import {
   Text,
   View,
 } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
-import { router, useFocusEffect, useLocalSearchParams } from "expo-router";
 import { cancelBooking, getMyBookings, type Booking } from "../api/bookingApi";
 import { getRestaurantById, type Restaurant } from "../api/restaurantApi";
 import { getBookingCode } from "../utils/booking";
@@ -64,6 +64,15 @@ const STATUS_CONFIG: Record<
     pillLabel: "Declined",
     pillClass: "bg-blue-100",
     pillTextClass: "text-red-600",
+    canCancel: false,
+  },
+  completed: {
+    icon: "checkmark-done",
+    title: "Booking Completed",
+    subtitle: "Thanks for dining with us!\nWe hope to see you again soon",
+    pillLabel: "Completed",
+    pillClass: "bg-blue-100",
+    pillTextClass: "text-blue-700",
     canCancel: false,
   },
 };
