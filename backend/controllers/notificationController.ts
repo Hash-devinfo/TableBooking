@@ -17,19 +17,19 @@ export const getMyNotifications = async (req: AuthRequest, res: Response) => {
   }
 };
 
-// // Small and cheap: the bell badge calls this
-// export const getUnreadCount = async (req: AuthRequest, res: Response) => {
-//   try {
-//     const unreadCount = await Notification.countDocuments({
-//       user: req.userId,
-//       isRead: false,
-//     });
-//     return res.status(200).json({ unreadCount });
-//   } catch (error) {
-//     console.error("Unread count error:", error);
-//     return res.status(500).json({ message: "Something went wrong" });
-//   }
-// };
+// Small and cheap: the bell badge calls this
+export const getUnreadCount = async (req: AuthRequest, res: Response) => {
+  try {
+    const unreadCount = await Notification.countDocuments({
+      user: req.userId,
+      isRead: false,
+    });
+    return res.status(200).json({ unreadCount });
+  } catch (error) {
+    console.error("Unread count error:", error);
+    return res.status(500).json({ message: "Something went wrong" });
+  }
+};
 
 // export const markRead = async (req: AuthRequest, res: Response) => {
 //   try {
