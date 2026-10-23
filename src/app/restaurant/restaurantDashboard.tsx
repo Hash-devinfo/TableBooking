@@ -192,7 +192,7 @@ const goBack = () => {
 
   const handleUpdateStatus = async (
     bookingId: string,
-    status: "confirmed" | "rejected",
+    status: "confirmed" | "rejected"| "completed",
   ) => {
     try {
       setBusyId(bookingId);
