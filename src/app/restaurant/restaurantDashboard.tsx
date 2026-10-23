@@ -324,7 +324,6 @@ const RestaurantDashboard = () => {
             renderItem={({ item, index }) => {
               const style = STATUS_STYLES[item.status] ?? STATUS_STYLES.pending;
               const busy = busyId === item._id;
-
               const canRespond = item.status === "pending";
               const canComplete = item.status === "confirmed";
               const canDelete =
@@ -369,7 +368,6 @@ const RestaurantDashboard = () => {
                       {style.label}
                     </Text>
                   </View>
-
                   <View className=" w-[200px] items-center">
                     {busy ? (
                       <ActivityIndicator size="small" color="#2563EB" />
