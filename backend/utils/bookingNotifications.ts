@@ -4,7 +4,6 @@ import Restaurant from "../models/Restaurant.js";
 import User from "../models/User.js";
 
 type Id = string | Types.ObjectId;
-
 type BookingInfo = {
   _id: Id;
   customer: Id;
@@ -13,7 +12,6 @@ type BookingInfo = {
   time: string;
   guests: number;
 };
-
 const push = async (n: {
   user: Id;
   type: NotificationType;
@@ -23,7 +21,6 @@ const push = async (n: {
 }) => {
   await Notification.create(n);
 };
-
 const whenText = (date: Date | string, time: string) => {
   const d = new Date(date);
   if (Number.isNaN(d.getTime())) return time;
@@ -55,7 +52,6 @@ const context = async (booking: BookingInfo) => {
     when: whenText(booking.date, booking.time),
   };
 };
-
 // Customer made a booking
 export const notifyBookingCreated = async (booking: BookingInfo) => {
   try {
@@ -82,7 +78,6 @@ export const notifyBookingCreated = async (booking: BookingInfo) => {
     console.error("Notification error (created):", error);
   }
 };
-
 // Owner confirmed or rejected
 export const notifyBookingDecision = async (
   booking: BookingInfo,
