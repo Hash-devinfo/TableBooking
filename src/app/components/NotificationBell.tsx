@@ -14,7 +14,6 @@ export default function NotificationBell({
   containerClassName?: string;
 }) {
   const [count, setCount] = useState(0);
-
   useFocusEffect(
     useCallback(() => {
       let active = true;
