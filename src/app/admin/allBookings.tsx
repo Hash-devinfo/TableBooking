@@ -1,4 +1,6 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import { Ionicons } from "@expo/vector-icons";
+import { router, useFocusEffect, useLocalSearchParams } from "expo-router";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
   FlatList,
@@ -8,12 +10,9 @@ import {
   Text,
   View,
 } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
-import { Label, router, useFocusEffect } from "expo-router";
 import { getAdminBookings } from "../../api/adminApi";
 import type { Booking } from "../../api/bookingApi";
 import { getBookingCode } from "../../utils/booking";
-import { useLocalSearchParams } from "expo-router";
 
 type Filter = "all" | Booking["status"];
 
@@ -21,6 +20,7 @@ const FILTERS: { key: Filter; label: string }[] = [
   { key: "all", label: "All" },
   { key: "pending", label: "Pending" },
   { key: "confirmed", label: "Confirmed" },
+  { key: "completed", label: "Completed" },
   { key: "rejected", label: "Rejected" },
   { key: "cancelled", label: "Cancelled" },
 ];
@@ -28,6 +28,7 @@ const FILTERS: { key: Filter; label: string }[] = [
 const STATUS_STYLES: Record<string, { label: string; className: string }> = {
   pending: { label: "Pending", className: "bg-yellow-100 text-yellow-700" },
   confirmed: { label: "Confirmed", className: "bg-green-100 text-green-700" },
+  completed: { label: "Completed", className: "bg-blue-100 text-blue-700" },
   rejected: { label: "Rejected", className: "bg-red-100 text-red-700" },
   cancelled: { label: "Cancelled", className: "bg-gray-200 text-gray-600" },
 };
@@ -144,6 +145,7 @@ const AllBookings = () => {
       all: bookings.length,
       pending: 0,
       confirmed: 0,
+      completed: 0,
       rejected: 0,
       cancelled: 0,
     };
@@ -166,8 +168,6 @@ const AllBookings = () => {
       </View>
     );
   }
-
-  
 
   return (
     <View className="flex-1 bg-gray-50 pt-16">
